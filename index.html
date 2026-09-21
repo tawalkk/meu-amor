@@ -12,12 +12,6 @@
     <link rel="stylesheet" href="social.css" />
     <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'%3E%3Crect width='64' height='64' rx='16' fill='%23fff0f6'/%3E%3Cpath d='M32 49S10 36 10 21c0-8 11-12 17-3 5-9 27-5 27 3 0 15-22 28-22 28Z' fill='%23f45d9b'/%3E%3C/svg%3E" />
     <style>
-      .photo-placeholder{overflow:hidden}
-      .photo-placeholder img{width:100%;height:100%;display:block;object-fit:cover;object-position:center}
-      .photo-two,.photo-three{height:330px;align-items:center;justify-content:flex-start}
-      .photo-two img{object-fit:contain;background:#ffe9a5}
-      .photo-three img{object-fit:contain;background:#cfeff5}
-      .live-counter{display:flex;gap:8px;align-items:baseline;margin-left:10px;color:#c58da5;font:500 12px 'DM Sans',sans-serif;white-space:nowrap}.live-counter b{color:var(--pink);font:700 18px 'Baloo 2',sans-serif}
       .home-links{display:grid;grid-template-columns:repeat(3,1fr);gap:18px;padding:18px 0 105px}
       .home-links a{position:relative;display:flex;flex-direction:column;gap:5px;padding:23px 25px;background:#fff;border:1px solid var(--border);text-decoration:none;color:var(--ink);transition:transform .2s,box-shadow .2s}
       .home-links a:hover{transform:translateY(-4px);box-shadow:0 12px 25px #b9799e1c}
@@ -53,11 +47,8 @@
       <nav class="nav-links" aria-label="Navegação principal">
         <a href="historia.html">nossa história</a>
         <a href="momentos.html">momentos</a>
+        <a href="playlist.html">playlist</a>
         <a class="nav-heart" href="carta.html">♥</a>
-        <span class="social-links" aria-label="Instagrams">
-          <a class="social-link" href="https://www.instagram.com/lalavcard/" target="_blank" rel="noopener noreferrer" aria-label="Instagram da Lavínia" title="Instagram da Lavínia"><svg viewBox="0 0 24 24" aria-hidden="true"><rect x="3" y="3" width="18" height="18" rx="5"></rect><circle cx="12" cy="12" r="4"></circle><circle cx="17.5" cy="6.5" r="1"></circle></svg></a>
-          <a class="social-link" href="https://www.instagram.com/kaiqe.dias/" target="_blank" rel="noopener noreferrer" aria-label="Meu Instagram" title="Meu Instagram"><svg viewBox="0 0 24 24" aria-hidden="true"><rect x="3" y="3" width="18" height="18" rx="5"></rect><circle cx="12" cy="12" r="4"></circle><circle cx="17.5" cy="6.5" r="1"></circle></svg></a>
-        </span>
       </nav>
     </header>
 
@@ -75,15 +66,9 @@
           <div class="cloud cloud-one"></div>
           <div class="cloud cloud-two"></div>
           <div class="sunburst"></div>
-          <div class="character kitty-character">
-            <img src="Hello.png" alt="Hello Kitty" />
-          </div>
-          <div class="character riverdale-character">
-            <img src="rivalidade.png" alt="Riverdale" />
-          </div>
-          <div class="character pony-character">
-            <img src="pinke_pie.png" alt="Pinkie Pie" />
-          </div>
+          <div class="character kitty-character"><img src="Hello.png" alt="Hello Kitty" /></div>
+          <div class="character riverdale-character"><img src="rivalidade.png" alt="Riverdale" /></div>
+          <div class="character pony-character"><img src="pinke_pie.png" alt="Pinkie Pie" /></div>
           <span class="floating-heart heart-a">♥</span>
           <span class="floating-heart heart-b">♥</span>
           <span class="floating-heart heart-c">♥</span>
@@ -116,7 +101,15 @@
       </section>
     </main>
 
-    <footer><span>feito para meu amor</span><span class="footer-heart">♥</span><span>com carinho, sempre</span><span class="social-links footer-socials" aria-label="Instagrams"><a class="social-link" href="https://www.instagram.com/lalavcard/" target="_blank" rel="noopener noreferrer" aria-label="Instagram da Lav" title="Instagram da Lav"><svg viewBox="0 0 24 24" aria-hidden="true"><rect x="3" y="3" width="18" height="18" rx="5"></rect><circle cx="12" cy="12" r="4"></circle><circle cx="17.5" cy="6.5" r="1"></circle></svg><span>Lav</span></a><a class="social-link" href="https://www.instagram.com/kaiqe.dias/" target="_blank" rel="noopener noreferrer" aria-label="Instagram do Kaiqe" title="Instagram do Kaiqe"><svg viewBox="0 0 24 24" aria-hidden="true"><rect x="3" y="3" width="18" height="18" rx="5"></rect><circle cx="12" cy="12" r="4"></circle><circle cx="17.5" cy="6.5" r="1"></circle></svg><span>Kaiqe</span></a></span></footer>
+    <footer>
+      <span>feito para meu amor</span>
+      <span class="footer-heart">♥</span>
+      <span>com carinho, sempre</span>
+      <span class="social-links footer-socials" aria-label="Instagrams">
+        <a class="social-link social-link-label" href="https://www.instagram.com/lalavcard/" target="_blank" rel="noopener noreferrer" aria-label="Instagram da Lav" title="Instagram da Lav"><svg viewBox="0 0 24 24" aria-hidden="true"><rect x="3" y="3" width="18" height="18" rx="5"></rect><circle cx="12" cy="12" r="4"></circle><circle cx="17.5" cy="6.5" r="1"></circle></svg><span>Lav</span></a>
+        <a class="social-link social-link-label" href="https://www.instagram.com/kaiqe.dias/" target="_blank" rel="noopener noreferrer" aria-label="Instagram do Kaique" title="Instagram do Kaique"><svg viewBox="0 0 24 24" aria-hidden="true"><rect x="3" y="3" width="18" height="18" rx="5"></rect><circle cx="12" cy="12" r="4"></circle><circle cx="17.5" cy="6.5" r="1"></circle></svg><span>Kaique</span></a>
+      </span>
+    </footer>
     <div class="toast" id="toast" role="status" aria-live="polite">você é o meu lugar favorito ♥</div>
     <script src="script.js"></script>
   </body>
