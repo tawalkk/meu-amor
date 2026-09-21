@@ -16,6 +16,7 @@
       .home-links a{position:relative;display:flex;flex-direction:column;gap:5px;padding:23px 25px;background:#fff;border:1px solid var(--border);text-decoration:none;color:var(--ink);transition:transform .2s,box-shadow .2s}
       .home-links a:hover{transform:translateY(-4px);box-shadow:0 12px 25px #b9799e1c}
       .home-links a>span{color:var(--pink);font-size:22px}.home-links strong{font:700 21px 'Baloo 2',sans-serif}.home-links small{color:var(--muted);font-size:11px}.home-links b{position:absolute;right:20px;bottom:18px;color:var(--pink);font-size:19px}
+      .counter{display:flex;flex-direction:column;align-items:flex-start;justify-content:center;gap:5px}.counter-main{display:flex;align-items:baseline;gap:10px}.counter-extra{font-size:11px;line-height:1.1;color:var(--muted);opacity:.85;letter-spacing:.2px}
       .hero-copy{position:relative;z-index:2}
       .hero-art{position:relative;z-index:1;overflow:visible;min-height:420px}
       .hero-art .character{position:absolute;display:flex;align-items:flex-end;justify-content:center;z-index:1}
@@ -51,6 +52,8 @@
         .art-caption{right:12px;bottom:-18px;font-size:13px;max-width:115px;line-height:1.1}
         .art-caption strong{font-size:16px}
       }
+
+      .date-message{display:inline-flex;align-items:center;gap:8px;margin:0;padding:9px 14px;border:1px solid #f3cedd;border-radius:999px;background:#fff;color:#b9819a;text-decoration:none;font:italic 15px 'Baloo 2';box-shadow:0 6px 14px #b9799e12;transition:transform .2s,box-shadow .2s}.date-message:hover{transform:translateY(-2px);box-shadow:0 9px 18px #b9799e22}.date-message span{font-size:25px;color:var(--pink);line-height:.8}
     </style>
   </head>
   <body>
@@ -72,7 +75,7 @@
       <section class="hero section-wrap">
         <div class="hero-copy">
           <p class="eyebrow"><span>♥</span> um pedacinho do nosso amor</p>
-          <h1>Nosso primeiro<br /><em>mês</em> juntinhos.</h1>
+          <h1 id="relationship-title">Nosso primeiro<br /><em>mês</em> juntinhos.</h1>
           <p class="hero-text">Um mês pode parecer pouco no calendário, mas com você já cabe um universo inteiro de sorrisos.</p>
           <a class="primary-button" href="carta.html">abrir minha cartinha <span>↗</span></a>
           <div class="hero-note"><span class="note-line"></span><span>feito com carinho para você</span></div>
@@ -104,9 +107,15 @@
         <div class="section-wrap date-inner">
           <div class="date-label"><span class="calendar-icon">♥</span><span>desde o nosso<br /><strong>sim</strong></span></div>
           <div class="date-value"><span id="relationship-date">12.08.2026</span><small>até hoje</small></div>
-          <div class="counter"><strong id="days-together">32</strong><span>dias de<br />nós dois</span></div>
+          <div class="counter">
+            <div class="counter-main">
+              <strong id="days-together">32</strong>
+              <span>dias de<br />nós dois</span>
+            </div>
+            <div class="counter-extra"><small id="relationship-summary">1 ano e 2 meses</small></div>
+          </div>
           <div class="live-counter" aria-label="Tempo de namoro em tempo real"><span><b id="hours-together">00</b>h</span><span><b id="minutes-together">00</b>m</span><span><b id="seconds-together">00</b>s</span></div>
-          <div class="date-message">e contando... <span>∞</span></div>
+          <a class="date-message" href="teste-relogio.html">e contando... <span>∞</span></a>
         </div>
       </section>
 
