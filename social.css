@@ -1,3 +1,4 @@
+<<<<<<< Updated upstream
 .social-links{display:flex;align-items:center;gap:8px;margin-left:2px}
 .social-link{display:grid;place-items:center;width:30px;height:30px;color:var(--pink)!important;border:1px solid var(--border);border-radius:50%;background:#fff0f680;transition:transform .2s,background .2s}
 .social-link:hover{transform:translateY(-2px);background:var(--blush)}
@@ -16,3 +17,20 @@ footer .social-link svg{flex:none}
   footer .social-links{gap:6px}
   footer .social-link{height:27px;padding:0 5px;font-size:9px}
 }
+=======
+.social-links{display:flex;align-items:center;gap:8px;margin-left:2px;flex-wrap:wrap}
+.social-link{display:inline-flex;align-items:center;justify-content:center;gap:6px;padding:0 10px 0 8px;height:30px;color:var(--pink)!important;border:1px solid var(--border);border-radius:999px;background:#fff0f680;transition:transform .2s,background .2s;text-decoration:none}
+.social-link:hover{transform:translateY(-2px);background:var(--blush)}
+.social-link svg{width:16px;height:16px;fill:none;stroke:currentColor;stroke-width:1.8;flex-shrink:0}
+.social-link svg circle:last-child{fill:currentColor;stroke:none}
+.social-link span{font-size:11px;font-weight:700;letter-spacing:.6px;text-transform:lowercase;color:var(--pink)}
+.footer-socials{margin-left:0;margin-top:4px}
+@media(max-width:800px){
+  .nav-links{gap:12px}
+  .nav-links>a:not(.nav-heart){font-size:10px;letter-spacing:.8px}
+  .social-links{gap:5px}
+  .social-link{height:27px;padding:0 9px 0 7px}
+  .social-link svg{width:14px;height:14px}
+  .social-link span{font-size:10px}
+}
+>>>>>>> Stashed changes
