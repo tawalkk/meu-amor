@@ -49,10 +49,11 @@ document.head.appendChild(style);
 
 const musicKey = 'meu-amor-music';
 const musicFile = 'Vietsub  Last Night On Earth - Green Day  Lyrics Video - Vietsub Mỗi Ngày (youtube).mp3';
-const musicState = JSON.parse(localStorage.getItem(musicKey) || '{"playing":false,"time":0}');
+const musicState = JSON.parse(sessionStorage.getItem(musicKey) || localStorage.getItem(musicKey) || '{"playing":false,"time":0}');
 const musicAudio = new Audio(musicFile);
 musicAudio.loop = true;
-musicAudio.preload = 'metadata';
+musicAudio.preload = 'auto';
+musicAudio.load();
 
 const musicPlayer = document.createElement('div');
 musicPlayer.className = 'music-player';
@@ -65,10 +66,16 @@ const musicIcon = musicPlayer.querySelector('.music-player-icon');
 const musicStatus = musicPlayer.querySelector('.music-player-status');
 
 function saveMusicState() {
-  localStorage.setItem(musicKey, JSON.stringify({
+  const state = {
     playing: !musicAudio.paused,
-    time: musicAudio.currentTime,
-  }));
+    time: Number.isFinite(musicAudio.currentTime) ? musicAudio.currentTime : 0,
+  };
+
+  musicState.playing = state.playing;
+  musicState.time = state.time;
+
+  sessionStorage.setItem(musicKey, JSON.stringify(state));
+  localStorage.setItem(musicKey, JSON.stringify(state));
 }
 
 function updateMusicUi() {
@@ -79,8 +86,28 @@ function updateMusicUi() {
   musicStatus.textContent = playing ? 'tocando agora' : 'pausada';
 }
 
+function resumeMusicIfNeeded() {
+  if (!musicState.playing || musicAudio.paused === false) {
+    return;
+  }
+
+  if (musicAudio.readyState >= 2) {
+    if (musicState.time > 0 && musicAudio.duration && musicState.time < musicAudio.duration) {
+      musicAudio.currentTime = musicState.time;
+    }
+
+    musicAudio.play().catch(() => {
+      musicStatus.textContent = 'clique para liberar o áudio';
+    });
+  }
+}
+
 musicButton.addEventListener('click', async () => {
   if (musicAudio.paused) {
+    if (musicState.time > 0 && musicAudio.duration && musicState.time < musicAudio.duration) {
+      musicAudio.currentTime = musicState.time;
+    }
+
     try {
       await musicAudio.play();
     } catch {
@@ -90,25 +117,45 @@ musicButton.addEventListener('click', async () => {
   } else {
     musicAudio.pause();
   }
+
   saveMusicState();
   updateMusicUi();
 });
 
-musicAudio.addEventListener('play', updateMusicUi);
+musicAudio.addEventListener('play', () => {
+  musicState.playing = true;
+  updateMusicUi();
+});
+
 musicAudio.addEventListener('pause', () => {
+  musicState.playing = false;
   saveMusicState();
   updateMusicUi();
 });
+
 musicAudio.addEventListener('timeupdate', saveMusicState);
 
 musicAudio.addEventListener('loadedmetadata', () => {
-  if (musicState.time > 0 && musicState.time < musicAudio.duration) {
+  if (musicState.time > 0 && musicState.time < (musicAudio.duration || Number.POSITIVE_INFINITY)) {
     musicAudio.currentTime = musicState.time;
   }
+
   if (musicState.playing) {
-    musicAudio.play().catch(() => updateMusicUi());
+    resumeMusicIfNeeded();
+  }
+});
+
+musicAudio.addEventListener('canplay', () => {
+  if (musicState.playing) {
+    resumeMusicIfNeeded();
   }
 });
 
 window.addEventListener('pagehide', saveMusicState);
+window.addEventListener('pageshow', () => {
+  if (musicState.playing && musicAudio.paused) {
+    resumeMusicIfNeeded();
+  }
+});
+
 updateMusicUi();

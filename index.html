@@ -12,7 +12,7 @@
     <link rel="stylesheet" href="social.css" />
     <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'%3E%3Crect width='64' height='64' rx='16' fill='%23fff0f6'/%3E%3Cpath d='M32 49S10 36 10 21c0-8 11-12 17-3 5-9 27-5 27 3 0 15-22 28-22 28Z' fill='%23f45d9b'/%3E%3C/svg%3E" />
     <style>
-      .home-links{display:grid;grid-template-columns:repeat(3,1fr);gap:18px;padding:18px 0 105px}
+      .home-links{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:18px;padding:18px 0 105px}
       .home-links a{position:relative;display:flex;flex-direction:column;gap:5px;padding:23px 25px;background:#fff;border:1px solid var(--border);text-decoration:none;color:var(--ink);transition:transform .2s,box-shadow .2s}
       .home-links a:hover{transform:translateY(-4px);box-shadow:0 12px 25px #b9799e1c}
       .home-links a>span{color:var(--pink);font-size:22px}.home-links strong{font:700 21px 'Baloo 2',sans-serif}.home-links small{color:var(--muted);font-size:11px}.home-links b{position:absolute;right:20px;bottom:18px;color:var(--pink);font-size:19px}
@@ -34,7 +34,23 @@
       @keyframes float{0%,100%{transform:translateY(0) scale(1);opacity:.7}50%{transform:translateY(-10px) scale(1.15);opacity:1}}
       @keyframes twinkle{0%,100%{transform:scale(.9) rotate(0deg);opacity:.6}50%{transform:scale(1.2) rotate(12deg);opacity:1}}
       .art-caption{right:64px;bottom:-10px}
-      @media(max-width:800px){.home-links{grid-template-columns:1fr;padding-bottom:70px}.hero-art{min-height:320px}.hero-copy{z-index:2}.hero-art .kitty-character{left:0;top:20px;width:auto;height:auto}.hero-art .kitty-character img{width:135px}.hero-art .riverdale-character{left:8px;bottom:8px;width:auto;height:auto}.hero-art .riverdale-character img{width:100px;height:auto}.hero-art .pony-character{right:6px;bottom:18px;width:auto;height:auto}.hero-art .pony-character img{width:140px;transform:translateY(-4px)}.floating-heart{font-size:16px}.sparkle{font-size:14px}.heart-a{left:78px;top:78px}.heart-b{left:126px;top:40px}.heart-c{left:165px;top:100px}.heart-d{right:42px;top:74px}.heart-e{right:96px;top:48px}.heart-f{right:30px;bottom:78px}.sparkle-a{left:170px;top:28px}.sparkle-b{right:48px;top:60px}.sparkle-c{left:92px;top:128px}.sparkle-d{right:105px;bottom:60px}.sparkle-e{left:210px;bottom:48px}.art-caption{right:10px;bottom:-6px;font-size:13px}.art-caption strong{font-size:16px}} 
+      @media(max-width:800px){
+        .home-links{grid-template-columns:1fr;padding-bottom:70px}
+        .hero-art{min-height:320px}
+        .hero-copy{z-index:2}
+        .hero-art .kitty-character{left:0;top:20px;width:auto;height:auto}
+        .hero-art .kitty-character img{width:135px}
+        .hero-art .riverdale-character{left:8px;bottom:8px;width:auto;height:auto}
+        .hero-art .riverdale-character img{width:100px;height:auto}
+        .hero-art .pony-character{right:6px;bottom:18px;width:auto;height:auto}
+        .hero-art .pony-character img{width:140px;transform:translateY(-4px)}
+        .floating-heart{font-size:16px}
+        .sparkle{font-size:14px}
+        .heart-a{left:78px;top:78px}.heart-b{left:126px;top:40px}.heart-c{left:165px;top:100px}.heart-d{right:42px;top:74px}.heart-e{right:96px;top:48px}.heart-f{right:30px;bottom:78px}
+        .sparkle-a{left:170px;top:28px}.sparkle-b{right:48px;top:60px}.sparkle-c{left:92px;top:128px}.sparkle-d{right:105px;bottom:60px}.sparkle-e{left:210px;bottom:48px}
+        .art-caption{right:12px;bottom:-18px;font-size:13px;max-width:115px;line-height:1.1}
+        .art-caption strong{font-size:16px}
+      }
     </style>
   </head>
   <body>
@@ -97,6 +113,7 @@
       <section class="home-links section-wrap">
         <a href="historia.html"><span>✿</span><strong>nossa história</strong><small>o começo de tudo bonito</small><b>↗</b></a>
         <a href="momentos.html"><span>✦</span><strong>nossos momentos</strong><small>pequenos infinitos só nossos</small><b>↗</b></a>
+        <a href="playlist.html"><span>♫</span><strong>playlist</strong><small>a trilha do nosso amor</small><b>↗</b></a>
         <a href="carta.html"><span>♥</span><strong>minha cartinha</strong><small>um carinho escrito para você</small><b>↗</b></a>
       </section>
     </main>
