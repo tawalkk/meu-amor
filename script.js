@@ -46,3 +46,69 @@ surpriseButton?.addEventListener('click', () => {
 const style = document.createElement('style');
 style.textContent = '@keyframes burst{to{transform:translateY(-180px) translateX(calc((var(--x, 0) - 50) * 1px)) rotate(180deg);opacity:0}}';
 document.head.appendChild(style);
+
+const musicKey = 'meu-amor-music';
+const musicFile = 'Vietsub  Last Night On Earth - Green Day  Lyrics Video - Vietsub Mỗi Ngày (youtube).mp3';
+const musicState = JSON.parse(localStorage.getItem(musicKey) || '{"playing":false,"time":0}');
+const musicAudio = new Audio(musicFile);
+musicAudio.loop = true;
+musicAudio.preload = 'metadata';
+
+const musicPlayer = document.createElement('div');
+musicPlayer.className = 'music-player';
+musicPlayer.setAttribute('aria-label', 'Player de música');
+musicPlayer.innerHTML = '<button type="button" aria-label="Tocar música"><span class="music-player-icon">▶</span></button><span class="music-player-info"><span class="music-player-title">Last Night On Earth</span><span class="music-player-status">música do nosso amor</span></span>';
+document.body.appendChild(musicPlayer);
+
+const musicButton = musicPlayer.querySelector('button');
+const musicIcon = musicPlayer.querySelector('.music-player-icon');
+const musicStatus = musicPlayer.querySelector('.music-player-status');
+
+function saveMusicState() {
+  localStorage.setItem(musicKey, JSON.stringify({
+    playing: !musicAudio.paused,
+    time: musicAudio.currentTime,
+  }));
+}
+
+function updateMusicUi() {
+  const playing = !musicAudio.paused;
+  musicPlayer.classList.toggle('is-playing', playing);
+  musicIcon.textContent = playing ? 'Ⅱ' : '▶';
+  musicButton.setAttribute('aria-label', playing ? 'Pausar música' : 'Tocar música');
+  musicStatus.textContent = playing ? 'tocando agora' : 'pausada';
+}
+
+musicButton.addEventListener('click', async () => {
+  if (musicAudio.paused) {
+    try {
+      await musicAudio.play();
+    } catch {
+      musicStatus.textContent = 'clique para liberar o áudio';
+      return;
+    }
+  } else {
+    musicAudio.pause();
+  }
+  saveMusicState();
+  updateMusicUi();
+});
+
+musicAudio.addEventListener('play', updateMusicUi);
+musicAudio.addEventListener('pause', () => {
+  saveMusicState();
+  updateMusicUi();
+});
+musicAudio.addEventListener('timeupdate', saveMusicState);
+
+musicAudio.addEventListener('loadedmetadata', () => {
+  if (musicState.time > 0 && musicState.time < musicAudio.duration) {
+    musicAudio.currentTime = musicState.time;
+  }
+  if (musicState.playing) {
+    musicAudio.play().catch(() => updateMusicUi());
+  }
+});
+
+window.addEventListener('pagehide', saveMusicState);
+updateMusicUi();
