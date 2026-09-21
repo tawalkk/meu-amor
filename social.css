@@ -1,0 +1,18 @@
+.social-links{display:flex;align-items:center;gap:8px;margin-left:2px}
+.social-link{display:grid;place-items:center;width:30px;height:30px;color:var(--pink)!important;border:1px solid var(--border);border-radius:50%;background:#fff0f680;transition:transform .2s,background .2s}
+.social-link:hover{transform:translateY(-2px);background:var(--blush)}
+.social-link svg{width:16px;height:16px;fill:none;stroke:currentColor;stroke-width:1.8}
+.social-link svg circle:last-child{fill:currentColor;stroke:none}
+header .social-links{display:none}
+footer .social-links{margin:0;gap:12px}
+footer .social-link{width:auto;height:30px;padding:0 8px;border-radius:3px;display:inline-flex;align-items:center;gap:5px;text-decoration:none;font-size:10px;font-weight:700;letter-spacing:.4px}
+footer .social-link svg{flex:none}
+@media(max-width:800px){
+  .nav-links{gap:12px}
+  .nav-links>a:not(.nav-heart){font-size:10px;letter-spacing:.8px}
+  .social-links{gap:5px}
+  .social-link{width:27px;height:27px}
+  .social-link svg{width:14px;height:14px}
+  footer .social-links{gap:6px}
+  footer .social-link{height:27px;padding:0 5px;font-size:9px}
+}
