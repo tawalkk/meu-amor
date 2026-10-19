@@ -1,7 +1,44 @@
 create table if not exists public.couple_members (
   user_id uuid primary key references auth.users(id) on delete cascade,
+  username text unique,
   created_at timestamptz not null default now()
 );
+
+alter table public.couple_members
+  add column if not exists username text;
+
+create unique index if not exists couple_members_username_key
+  on public.couple_members (lower(username))
+  where username is not null;
+
+insert into public.couple_members (user_id, username)
+select
+  id,
+  case email
+    when 'kahique@meu-amor.invalid' then 'kahique'
+    when 'lalavs@meu-amor.invalid' then 'lalavs'
+  end
+from auth.users
+where email in ('kahique@meu-amor.invalid', 'lalavs@meu-amor.invalid')
+on conflict (user_id) do update
+set username = excluded.username;
+
+create or replace function public.resolve_couple_login(p_username text)
+returns text
+language sql
+stable
+security definer
+set search_path = ''
+as $$
+  select u.email
+  from auth.users as u
+  join public.couple_members as m on m.user_id = u.id
+  where lower(m.username) = lower(trim(p_username))
+  limit 1;
+$$;
+
+revoke all on function public.resolve_couple_login(text) from public, anon, authenticated;
+grant execute on function public.resolve_couple_login(text) to anon, authenticated;
 
 create table if not exists public.couple_messages (
   id uuid primary key default gen_random_uuid(),

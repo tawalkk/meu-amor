@@ -1,0 +1,13 @@
+{
+  "appId": "com.kaique.meuamor",
+  "appName": "Nosso amor",
+  "webDir": "www",
+  "server": {
+    "androidScheme": "https"
+  },
+  "plugins": {
+    "LocalNotifications": {
+      "iconColor": "#f45d9b"
+    }
+  }
+}

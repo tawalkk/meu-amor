@@ -35,19 +35,11 @@ As interações privadas precisam de internet, HTTPS e de um projeto Supabase; p
 
 **Importante:** o login nas páginas estático é uma barreira de navegação, não transforma o conteúdo do GitHub Pages em privado. Arquivos que já estão no repositório (incluindo fotos) podem ser acessados diretamente por qualquer pessoa. A segurança real dos recadinhos e das novas fotos vem do Supabase e das regras RLS/bucket privado; não envie fotos que devam permanecer secretas para `web/assets/images`.
 
-1. Crie um projeto no Supabase e abra **SQL Editor**.
-2. Execute todo o conteúdo de [`supabase/setup.sql`](./supabase/setup.sql). Ele cria as tabelas, políticas privadas (RLS), bucket privado para fotos e canais em tempo real.
-3. A tela de login usa os nomes `kahique` e `lalavs`, associados aos endereços internos `kahique@meu-amor.invalid` e `lalavs@meu-amor.invalid`. No Supabase, abra **Authentication → Users → Add user**, crie essas duas contas com senhas novas e fortes e marque cada e-mail como confirmado. O domínio `.invalid` é intencional: não recebe e-mails. Não reutilize a senha que foi compartilhada no chat.
-4. Como as contas são criadas diretamente pelo painel, os usuários não precisam clicar em confirmação por e-mail. Desative o cadastro público em **Authentication → Settings / Sign-in**; a tela do site só permite entrar.
+1. Crie um projeto no Supabase e abra **Authentication → Users → Add user**. Crie as duas contas usando os e-mails internos `kahique@meu-amor.invalid` e `lalavs@meu-amor.invalid`, com senhas novas e fortes, e marque cada conta como confirmada. O domínio `.invalid` é intencional: não recebe e-mails. Nunca reutilize uma senha compartilhada em conversa.
+2. Desative o cadastro público em **Authentication → Settings / Sign-in**. As contas do casal devem ser criadas manualmente no painel.
+3. No **SQL Editor**, execute todo o conteúdo de [`supabase/setup.sql`](./supabase/setup.sql). Ele cria as tabelas e políticas, inclui as contas existentes em `couple_members` com os nomes `kahique` e `lalavs`, além de criar a função segura que procura o e-mail da conta pelo nome de usuário. Se você já executou esse SQL antes de criar as contas, execute-o novamente agora.
+4. A tela consulta o nome de usuário no Supabase e envia o e-mail encontrado junto da senha para o Supabase Auth. **As senhas nunca são armazenadas nessa tabela**: o Auth mantém e verifica as senhas com segurança.
 5. No Supabase, abra **Project Settings → API Keys** e use somente o **Project URL** e a chave pública **Publishable/anon** em [`web/assets/js/couple-config.js`](./web/assets/js/couple-config.js). Nunca use `service_role`.
 6. Gere os arquivos web com `npm run prepare:web` e publique o conteúdo da pasta `www` no GitHub Pages. O workflow em `.github/workflows/pages.yml` também publica o site a cada atualização na branch `main`.
-7. No **SQL Editor**, libere somente as contas do casal:
-
-   ```sql
-   insert into public.couple_members (user_id)
-   select id from auth.users
-   where email in ('kahique@meu-amor.invalid', 'lalavs@meu-amor.invalid')
-   on conflict (user_id) do nothing;
-   ```
 
 O site mostra uma tela de login antes das páginas e mantém a sessão em cada celular. Depois de entrar, os recadinhos aparecem nos dois celulares em tempo real. Na página **momentos**, uma foto JPG, PNG ou WebP de até 10 MB é enviada para o bucket privado e aparece automaticamente no álbum compartilhado. Não publique a chave `service_role` nem remova as políticas de segurança do SQL.

@@ -39,14 +39,28 @@ function setupLoginPage(client) {
     event.preventDefault();
     const username = form.elements.username.value.trim().toLowerCase();
     const password = form.elements.password.value;
-    const email = config.userAliases?.[username];
-    if (!email) {
-      showLoginMessage('usuário ou senha incorretos.', true);
+    if (!username) {
+      showLoginMessage('digite seu usuário.', true);
       return;
     }
     submit.disabled = true;
     showLoginMessage('entrando no nosso cantinho...');
     try {
+      const { data: email, error: lookupError } = await client.rpc('resolve_couple_login', {
+        p_username: username,
+      });
+      if (lookupError) {
+        if (lookupError.code === 'PGRST202' || lookupError.code === '42883') {
+          showLoginMessage('a tabela de login ainda não está pronta. Execute novamente o arquivo supabase/setup.sql no Supabase.', true);
+        } else {
+          showLoginMessage(`não consegui consultar o usuário (${lookupError.status ?? 'sem status'}): ${lookupError.message}`, true);
+        }
+        return;
+      }
+      if (typeof email !== 'string' || !email) {
+        showLoginMessage('usuário não encontrado. Confira se a conta foi criada e incluída na tabela de membros do Supabase.', true);
+        return;
+      }
       const { error } = await client.auth.signInWithPassword({ email, password });
       if (error) {
         const message = error.message.toLowerCase();
