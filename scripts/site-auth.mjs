@@ -2,7 +2,12 @@ import { createClient } from '@supabase/supabase-js';
 
 const config = window.MeuAmorSupabaseConfig;
 const isLoginPage = document.body.classList.contains('login-page');
-const siteBase = new URL('../../', document.currentScript.src);
+const pagePath = window.location.pathname;
+const pagesIndex = pagePath.indexOf('/pages/');
+const siteBasePath = pagesIndex >= 0
+  ? pagePath.slice(0, pagesIndex + 1)
+  : pagePath.endsWith('/') ? pagePath : pagePath.slice(0, pagePath.lastIndexOf('/') + 1);
+const siteBase = new URL(siteBasePath, window.location.origin);
 
 if (!config?.url || !config?.anonKey) {
   if (isLoginPage) {
