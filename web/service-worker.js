@@ -1,4 +1,4 @@
-const CACHE_NAME = 'nosso-amor-v16';
+const CACHE_NAME = 'nosso-amor-v17';
 const APP_FILES = [
   './', './index.html', './manifest.webmanifest',
   './assets/css/styles.css', './assets/css/modern.css', './assets/css/social.css', './assets/css/couple.css', './assets/css/auth.css', './assets/css/chat.css',
