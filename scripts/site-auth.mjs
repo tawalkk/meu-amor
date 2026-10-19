@@ -133,16 +133,7 @@ function redirectToLogin() {
 }
 
 function redirectAfterLogin() {
-  const defaultUrl = siteBase;
-  const requested = new URLSearchParams(window.location.search).get('returnTo');
-  if (requested) {
-    const target = new URL(requested, window.location.origin);
-    if (target.origin === window.location.origin && target.pathname.startsWith(defaultUrl.pathname)) {
-      window.location.replace(target.href);
-      return;
-    }
-  }
-  window.location.replace(defaultUrl.href);
+  window.location.replace(new URL('index.html', siteBase).href);
 }
 
 function showLoginMessage(message, isError = false) {
