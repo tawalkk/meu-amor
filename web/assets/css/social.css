@@ -15,6 +15,13 @@
 }
 
 .music-player{position:fixed;right:22px;bottom:22px;z-index:10;display:flex;align-items:center;gap:10px;padding:9px 12px 9px 9px;border:1px solid #e7b7ca;border-radius:999px;background:#fffafc;box-shadow:0 12px 30px #8b41631f;color:var(--ink)}
+.music-player-content{display:flex;align-items:center;gap:10px;transition:opacity .2s ease}
+.music-player-toggle{position:absolute;top:50%;left:-35px;width:34px!important;height:44px!important;transform:translateY(-50%);border:1px solid #e7b7ca!important;border-right:0!important;border-radius:14px 0 0 14px!important;background:#fffafc!important;color:var(--pink)!important;font-size:23px;line-height:1;box-shadow:-5px 5px 14px #8b41631a!important}
+.music-player-toggle:hover{transform:translateY(-50%) translateX(-2px)!important;background:var(--blush)!important}
+.music-player-toggle:focus-visible{z-index:1}
+.music-player.is-collapsed{transform:translateX(calc(100% - 38px))}
+.music-player.is-collapsed .music-player-content{opacity:0;pointer-events:none}
+.music-player,.music-player-toggle{transition:transform .22s ease,background .2s}
 .music-player button{display:grid;place-items:center;width:38px;height:38px;border:0;border-radius:50%;background:var(--pink);color:#fff;cursor:pointer;box-shadow:0 5px 12px #f45d9b4d;transition:transform .2s,background .2s}
 .music-player button:hover{transform:scale(1.06);background:var(--hot-pink)}
 .music-player button:focus-visible{outline:3px solid #f45d9b;outline-offset:3px}
@@ -25,6 +32,7 @@
 .music-player.is-playing .music-player-icon{animation:music-pulse 1s ease-in-out infinite}
 @keyframes music-pulse{50%{transform:scale(1.18)}}
 @media(max-width:560px){.music-player{right:12px;bottom:12px;padding:7px 10px 7px 7px}.music-player button{width:34px;height:34px}.music-player-info{min-width:100px;max-width:135px}.music-player-title{font-size:10px}}
+@media(max-width:560px){.music-player.is-collapsed{transform:translateX(calc(100% - 38px))}.music-player-toggle{left:-35px;width:34px!important;height:42px!important}}
 
 @media(max-width:560px){
   .footer-socials{width:100%;justify-content:center;gap:8px;flex-wrap:nowrap}

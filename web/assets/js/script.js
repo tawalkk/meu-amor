@@ -147,7 +147,7 @@ function addLetterSharing() {
 
 function addGenericConfetti() {
   document.querySelectorAll('button:not(.theme-toggle)').forEach((button) => {
-    if (button.id === 'surprise-button' || button.dataset.confettiReady) return;
+    if (button.id === 'surprise-button' || button.matches('[data-music-toggle]') || button.dataset.confettiReady) return;
     button.dataset.confettiReady = 'true';
     button.addEventListener('click', () => {
       for (let index = 0; index < 8; index += 1) {
@@ -369,16 +369,33 @@ musicAudio.load();
 
 const musicPlayer = document.createElement('div');
 musicPlayer.className = 'music-player';
+musicPlayer.id = 'music-player';
 musicPlayer.setAttribute('aria-label', 'Player de música');
-musicPlayer.innerHTML = '<div class="music-player-cover">♥</div><button type="button" aria-label="Tocar música"><span class="music-player-icon">▶</span></button><span class="music-player-info"><span class="music-player-title">Last Night On Earth</span><span class="music-player-status">música do nosso amor</span><input class="music-player-progress" type="range" min="0" max="100" value="0" aria-label="Progresso da música" /></span><label class="music-player-volume" aria-label="Volume">⌁<input type="range" min="0" max="1" step="0.01" value="0.7" /></label>';
+musicPlayer.innerHTML = '<button class="music-player-toggle" type="button" data-music-toggle aria-controls="music-player-content" aria-expanded="true" aria-label="Esconder player de música">›</button><div class="music-player-content" id="music-player-content"><div class="music-player-cover">♥</div><button type="button" data-music-play aria-label="Tocar música"><span class="music-player-icon">▶</span></button><span class="music-player-info"><span class="music-player-title">Last Night On Earth</span><span class="music-player-status">música do nosso amor</span><input class="music-player-progress" type="range" min="0" max="100" value="0" aria-label="Progresso da música" /></span><label class="music-player-volume" aria-label="Volume">⌁<input type="range" min="0" max="1" step="0.01" value="0.7" /></label></div>';
 document.body.appendChild(musicPlayer);
 
-const musicButton = musicPlayer.querySelector('button');
+const musicPlayerToggle = musicPlayer.querySelector('[data-music-toggle]');
+const musicPlayerContent = musicPlayer.querySelector('.music-player-content');
+const musicButton = musicPlayer.querySelector('[data-music-play]');
 const musicIcon = musicPlayer.querySelector('.music-player-icon');
 const musicStatus = musicPlayer.querySelector('.music-player-status');
 const musicProgress = musicPlayer.querySelector('.music-player-progress');
 const musicVolume = musicPlayer.querySelector('.music-player-volume input');
 musicAudio.volume = Number(musicVolume.value);
+
+function setMusicPlayerCollapsed(collapsed) {
+  musicPlayer.classList.toggle('is-collapsed', collapsed);
+  musicPlayerToggle.textContent = collapsed ? '‹' : '›';
+  musicPlayerToggle.setAttribute('aria-expanded', String(!collapsed));
+  musicPlayerToggle.setAttribute('aria-label', `${collapsed ? 'Mostrar' : 'Esconder'} player de música`);
+  musicPlayerContent.inert = collapsed;
+  localStorage.setItem('meu-amor-music-player-collapsed', String(collapsed));
+}
+
+setMusicPlayerCollapsed(localStorage.getItem('meu-amor-music-player-collapsed') === 'true');
+musicPlayerToggle.addEventListener('click', () => {
+  setMusicPlayerCollapsed(!musicPlayer.classList.contains('is-collapsed'));
+});
 
 function saveMusicState() {
   const state = {
