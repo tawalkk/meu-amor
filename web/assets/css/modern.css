@@ -31,6 +31,7 @@ body {
 }
 .brand { gap: 10px; font-size: 19px; font-weight: 800; letter-spacing: -.7px; }
 .brand-bow { filter: drop-shadow(0 4px 8px rgba(200, 67, 121, .17)); }
+.brand-icon { width: 36px; height: 36px; flex: none; object-fit: contain; filter: drop-shadow(0 4px 8px rgba(200, 67, 121, .17)); }
 .nav-links { gap: 32px; }
 .nav-links a:not(.nav-heart) {
   color: #705c68;

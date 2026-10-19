@@ -5,6 +5,7 @@ Site e app Android para celebrar a história de vocês. O código do site fica e
 ## Organização do repositório
 
 - `web/`: páginas, estilos, imagens, áudio, configuração do Supabase e service worker do site.
+- `web/assets/images/icon_appandsite.png`: ícone compartilhado pelo cabeçalho, site instalado e app Android.
 - `scripts/`: fontes JavaScript e scripts de preparação/build.
 - `supabase/`: SQL de configuração do banco, políticas e armazenamento.
 - `android/`: projeto nativo Android gerado pelo Capacitor.
@@ -42,4 +43,4 @@ As interações privadas precisam de internet, HTTPS e de um projeto Supabase; p
 5. No Supabase, abra **Project Settings → API Keys** e use somente o **Project URL** e a chave pública **Publishable/anon** em [`web/assets/js/couple-config.js`](./web/assets/js/couple-config.js). Nunca use `service_role`.
 6. Gere os arquivos web com `npm run prepare:web` e publique o conteúdo da pasta `www` no GitHub Pages. O workflow em `.github/workflows/pages.yml` também publica o site a cada atualização na branch `main`.
 
-O site mostra uma tela de login antes das páginas e mantém a sessão em cada celular. A página **conversa** oferece um chat privado em tempo real, com envio de fotos e gravações de voz de até 10 MB, além do modo noturno compartilhado com o restante do site. A página **momentos** permite enviar fotos JPG, PNG ou WebP de até 10 MB para o bucket privado; cada pessoa pode remover as próprias fotos pelo botão exibido no álbum. Se o SQL já foi executado anteriormente, execute `supabase/setup.sql` novamente para habilitar anexos e gravações de voz. Não publique a chave `service_role` nem remova as políticas de segurança do SQL.
+O site mostra uma tela de login antes das páginas e mantém a sessão em cada celular. A página **conversa** oferece um chat privado em tempo real, com envio de fotos e gravações de voz de até 10 MB, além do modo noturno compartilhado com o restante do site. A página **momentos** permite enviar fotos JPG, PNG ou WebP de até 10 MB usando um seletor com prévia do nome; cada pessoa pode remover as próprias fotos pelo botão exibido no álbum. Se o SQL já foi executado anteriormente, execute `supabase/setup.sql` novamente para habilitar anexos e gravações de voz. Não publique a chave `service_role` nem remova as políticas de segurança do SQL.

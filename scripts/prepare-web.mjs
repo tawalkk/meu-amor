@@ -29,10 +29,13 @@ await build({
 
 for (const page of ['www/index.html', ...['carta', 'chuva', 'conversa', 'historia', 'login', 'momentos', 'playlist', 'teste-relogio'].map((name) => `www/pages/${name}.html`)]) {
   const html = (await readFile(page, 'utf8'))
-    .replaceAll('site-auth.js"', 'site-auth.js?v=18"');
+    .replaceAll('site-auth.js"', 'site-auth.js?v=20"')
+    .replace(/script\.js(?:\?v=\d+)?"/g, 'script.js?v=20"')
+    .replace(/\s*<link rel="(?:icon|apple-touch-icon)"[^>]*>/g, '');
   const assetPrefix = page.includes('/pages/') ? '../assets/' : 'assets/';
+  const icons = `    <link rel="icon" type="image/png" href="${assetPrefix}images/icon_appandsite.png" />\n    <link rel="apple-touch-icon" href="${assetPrefix}images/icon_appandsite.png" />\n`;
   const scripts = `<script src="${assetPrefix}js/native-notifications.js"></script>`;
-  await writeFile(page, html.replace('</body>', `  ${scripts}\n  </body>`));
+  await writeFile(page, html.replace('</head>', `${icons}  </head>`).replace('</body>', `  ${scripts}\n  </body>`));
 }
 
 const serviceWorkerPath = 'www/service-worker.js';

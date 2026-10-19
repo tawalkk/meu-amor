@@ -253,7 +253,7 @@ function notifyIfAnniversary() {
   const noticeKey = `meu-amor-notified-${now.getFullYear()}-${now.getMonth()}`;
   if (localStorage.getItem(noticeKey)) return;
   const months = Math.max(1, (now.getFullYear() - relationshipStart.getFullYear()) * 12 + now.getMonth() - relationshipStart.getMonth());
-  new Notification(`Feliz ${months}º mês, meu amor!`, { body: 'Mais um mês da nossa história bonita. Abra a cartinha ♥', icon: new URL('assets/images/app-icon.svg', siteRootUrl).href });
+  new Notification(`Feliz ${months}º mês, meu amor!`, { body: 'Mais um mês da nossa história bonita. Abra a cartinha ♥', icon: new URL('assets/images/icon_appandsite.png', siteRootUrl).href });
   localStorage.setItem(noticeKey, 'true');
 }
 

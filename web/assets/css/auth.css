@@ -4,7 +4,7 @@ html.auth-pending body{visibility:hidden}
 .login-page{display:grid;min-height:100vh;place-items:center;padding:30px 18px;background:radial-gradient(ellipse at 50% 0%,#fff 0%,#fff5fa 52%,#ffeaf3 100%)}
 .login-shell{position:relative;width:min(100%,460px)}
 .login-brand{display:flex;justify-content:center;align-items:center;gap:8px;margin:0 auto 20px;color:var(--ink);font:700 22px 'Baloo 2',sans-serif;text-decoration:none}
-.login-brand span{font-size:23px}
+.login-brand-icon{width:42px;height:42px;object-fit:contain}
 .login-card{position:relative;overflow:hidden;padding:36px clamp(22px,7vw,46px) 30px;border:1px solid var(--border);border-radius:26px;background:#fff;box-shadow:0 20px 60px #b9799e20;text-align:center}
 .login-heart{position:absolute;top:20px;right:24px;color:#fbe4ed;font-size:25px}
 .login-card .eyebrow{margin:0 0 12px}

@@ -60,8 +60,12 @@ function startCoupleSpace() {
         <div class="couple-status-wrap"></div>
         <div class="couple-private" data-private hidden>
           <form class="couple-photo-form" data-photo-form>
-            <label for="couple-photo">escolha uma foto JPG, PNG ou WebP (até 10 MB)</label>
-            <input id="couple-photo" name="photo" type="file" accept="image/jpeg,image/png,image/webp" required />
+            <label class="couple-file-picker" for="couple-photo">
+              <span class="couple-file-icon" aria-hidden="true">↑</span>
+              <span class="couple-file-copy"><strong>escolha uma foto</strong><small>JPG, PNG ou WebP · até 10 MB</small></span>
+              <span class="couple-file-name" data-file-name>Nenhum arquivo escolhido</span>
+              <input class="visually-hidden" id="couple-photo" name="photo" type="file" accept="image/jpeg,image/png,image/webp" aria-label="Escolha uma foto para adicionar aos momentos" required />
+            </label>
             <label for="couple-caption">legenda (opcional)</label>
             <input id="couple-caption" name="caption" maxlength="120" placeholder="um dia muito especial..." />
             <button class="couple-button" type="submit">adicionar aos nossos momentos ✦</button>
@@ -508,9 +512,17 @@ function startCoupleSpace() {
 
   const photoForm = root.querySelector('[data-photo-form]');
   if (photoForm) {
+    const photoInput = photoForm.elements.photo;
+    const filePicker = photoForm.querySelector('.couple-file-picker');
+    const fileName = photoForm.querySelector('[data-file-name]');
+    photoInput.addEventListener('change', () => {
+      const file = photoInput.files[0];
+      fileName.textContent = file?.name || 'Nenhum arquivo escolhido';
+      filePicker.classList.toggle('has-file', Boolean(file));
+    });
     photoForm.addEventListener('submit', async (event) => {
       event.preventDefault();
-      const file = photoForm.elements.photo.files[0];
+      const file = photoInput.files[0];
       const caption = photoForm.elements.caption.value.trim();
       if (!file || !currentUser) return;
       if (!['image/jpeg', 'image/png', 'image/webp'].includes(file.type)) {
@@ -547,6 +559,8 @@ function startCoupleSpace() {
         return;
       }
       photoForm.reset();
+      fileName.textContent = 'Nenhum arquivo escolhido';
+      filePicker.classList.remove('has-file');
       uploadButton.disabled = false;
       showStatus('foto adicionada aos momentos ✦');
       await loadPhotos();

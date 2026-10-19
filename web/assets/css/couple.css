@@ -34,7 +34,16 @@
 .couple-moments-link{display:inline-block;margin-top:16px;color:var(--pink);font-size:12px;font-weight:700;text-decoration:none}
 .couple-moments-link:hover{text-decoration:underline}
 .couple-photo-form{margin-top:19px;padding:18px;border:1px dashed #e6b5c9;border-radius:16px;background:#fff9fc}
-.couple-photo-form input[type="file"]{max-width:100%;padding:8px;border:1px solid var(--border);border-radius:10px;background:#fff;color:var(--muted);font-size:12px}
+.couple-file-picker{display:flex;align-items:center;gap:12px;min-height:76px;padding:12px 15px;border:1px dashed #e6a9c2;border-radius:14px;background:linear-gradient(135deg,#fff,#fff4f8);color:var(--ink);cursor:pointer;transition:border-color .2s,background .2s,transform .2s}
+.couple-file-picker:hover,.couple-file-picker:focus-within{transform:translateY(-1px);border-color:var(--pink);background:#fff0f6}
+.couple-file-picker:focus-within{outline:3px solid #f45d9b55;outline-offset:2px}
+.couple-file-picker.has-file{border-style:solid;background:#fff0f6}
+.couple-file-icon{display:grid;place-items:center;width:42px;height:42px;flex:none;border-radius:12px;background:#ffe0ed;color:var(--pink);font-size:23px;font-weight:700}
+.couple-file-copy{display:grid;gap:3px;min-width:0}
+.couple-file-copy strong{font-size:12px}
+.couple-file-copy small{color:var(--muted);font-size:10px}
+.couple-file-name{min-width:0;margin-left:auto;overflow:hidden;color:var(--muted);font-size:10px;text-overflow:ellipsis;white-space:nowrap}
+.couple-photo-form .visually-hidden{position:absolute;width:1px;height:1px;padding:0;margin:-1px;overflow:hidden;clip:rect(0,0,0,0);white-space:nowrap;border:0}
 .couple-photo-form .couple-button{justify-self:start;margin-top:4px}
 .memory[data-shared-photo] .photo-placeholder{height:260px}
 .memory[data-shared-photo] .photo-placeholder img{object-fit:cover}
@@ -43,4 +52,7 @@ body.night-mode .couple-status{background:#3d2940;color:var(--muted)}
 body.night-mode .couple-status[data-kind="error"]{background:#4b2935;color:#ffc2cd}
 body.night-mode .couple-message-form,body.night-mode .couple-photo-form{background:#3d2940}
 body.night-mode .couple-outline-button,body.night-mode .couple-heart-button{background:#342536}
+body.night-mode .couple-file-picker{background:#2c222f;border-color:#70435d;color:var(--ink)}
+body.night-mode .couple-file-picker:hover,body.night-mode .couple-file-picker.has-file{background:#4a2e43;border-color:#a85b7e}
+body.night-mode .couple-file-icon{background:#563147;color:#ffd6e6}
 @media(max-width:600px){.couple-panel{padding:18px 14px}.couple-message-controls{flex-direction:column}.couple-message-controls .couple-button{align-self:flex-start}.couple-photo-form{padding:14px}.couple-heading h2{font-size:27px}}
