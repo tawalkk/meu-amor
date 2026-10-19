@@ -3,13 +3,18 @@
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <meta name="theme-color" content="#f45d9b" />
-    <title>Nosso primeiro mês</title>
+    <meta name="theme-color" content="#df5b91" />
+    <meta name="description" content="Um cantinho só nosso para celebrar nosso segundo mês e cada pedacinho da nossa história." />
+    <link rel="manifest" href="manifest.webmanifest" />
+    <link rel="apple-touch-icon" href="assets/images/app-icon.svg" />
+    <title>Nosso segundo mês | mês.dois</title>
     <link rel="preconnect" href="https://fonts.googleapis.com" />
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
     <link href="https://fonts.googleapis.com/css2?family=Baloo+2:wght@400;500;600;700;800&family=DM+Sans:wght@400;500;600;700&display=swap" rel="stylesheet" />
-    <link rel="stylesheet" href="styles.css" />
-    <link rel="stylesheet" href="social.css" />
+    <link rel="stylesheet" href="assets/css/styles.css" />
+    <link rel="stylesheet" href="assets/css/modern.css" />
+    <link rel="stylesheet" href="assets/css/social.css" />
+    <link rel="stylesheet" href="assets/css/couple.css" />
     <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'%3E%3Crect width='64' height='64' rx='16' fill='%23fff0f6'/%3E%3Cpath d='M32 49S10 36 10 21c0-8 11-12 17-3 5-9 27-5 27 3 0 15-22 28-22 28Z' fill='%23f45d9b'/%3E%3C/svg%3E" />
     <style>
       .home-links{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:18px;padding:18px 0 105px}
@@ -61,13 +66,13 @@
     <header class="topbar">
       <a class="brand" href="#inicio" aria-label="Voltar ao início">
         <span class="brand-bow">🎀</span>
-        <span>mês<span class="brand-dot">.</span>um</span>
+        <span>mês<span class="brand-dot">.</span>dois</span>
       </a>
       <nav class="nav-links" aria-label="Navegação principal">
-        <a href="historia.html">nossa história</a>
-        <a href="momentos.html">momentos</a>
-        <a href="playlist.html">playlist</a>
-        <a class="nav-heart" href="carta.html">♥</a>
+        <a href="pages/historia.html">nossa história</a>
+        <a href="pages/momentos.html">momentos</a>
+        <a href="pages/playlist.html">playlist</a>
+        <a class="nav-heart" href="pages/carta.html">♥</a>
       </nav>
     </header>
 
@@ -75,9 +80,10 @@
       <section class="hero section-wrap">
         <div class="hero-copy">
           <p class="eyebrow"><span>♥</span> um pedacinho do nosso amor</p>
-          <h1 id="relationship-title">Nosso primeiro<br /><em>mês</em> juntinhos.</h1>
-          <p class="hero-text">Um mês pode parecer pouco no calendário, mas com você já cabe um universo inteiro de sorrisos.</p>
-          <a class="primary-button" href="carta.html">abrir minha cartinha <span>↗</span></a>
+          <h1 id="relationship-title">Nosso segundo<br /><em>mês</em> juntinho.</h1>
+          <p class="hero-text">Dois meses de nós: tantos sorrisos, abraços e pequenas lembranças que já parecem um universo inteiro.</p>
+          <a class="primary-button" href="pages/carta.html">abrir minha cartinha <span>↗</span></a>
+          <button class="install-app-button" id="install-app" type="button" hidden>instalar nosso app <span>↓</span></button>
           <div class="hero-note"><span class="note-line"></span><span>feito com carinho para você</span></div>
         </div>
 
@@ -85,9 +91,9 @@
           <div class="cloud cloud-one"></div>
           <div class="cloud cloud-two"></div>
           <div class="sunburst"></div>
-          <div class="character kitty-character"><img src="Hello.png" alt="Hello Kitty" /></div>
-          <div class="character riverdale-character"><img src="rivalidade.png" alt="Riverdale" /></div>
-          <div class="character pony-character"><img src="pinke_pie.png" alt="Pinkie Pie" /></div>
+          <div class="character kitty-character"><img src="assets/images/Hello.png" alt="Hello Kitty" /></div>
+          <div class="character riverdale-character"><img src="assets/images/rivalidade.png" alt="Riverdale" /></div>
+          <div class="character pony-character"><img src="assets/images/pinke_pie.png" alt="Pinkie Pie" /></div>
           <span class="floating-heart heart-a">♥</span>
           <span class="floating-heart heart-b">♥</span>
           <span class="floating-heart heart-c">♥</span>
@@ -106,24 +112,26 @@
       <section class="date-ribbon" id="nossa-historia">
         <div class="section-wrap date-inner">
           <div class="date-label"><span class="calendar-icon">♥</span><span>desde o nosso<br /><strong>sim</strong></span></div>
-          <div class="date-value"><span id="relationship-date">12.08.2026</span><small>até hoje</small></div>
+          <div class="date-value"><span id="relationship-date">20.08.2026</span><small>até hoje</small></div>
           <div class="counter">
             <div class="counter-main">
-              <strong id="days-together">32</strong>
+              <strong id="days-together">60</strong>
               <span>dias de<br />nós dois</span>
             </div>
-            <div class="counter-extra"><small id="relationship-summary">1 ano e 2 meses</small></div>
+            <div class="counter-extra"><small id="relationship-summary">1 mês</small></div>
           </div>
           <div class="live-counter" aria-label="Tempo de namoro em tempo real"><span><b id="hours-together">00</b>h</span><span><b id="minutes-together">00</b>m</span><span><b id="seconds-together">00</b>s</span></div>
-          <a class="date-message" href="teste-relogio.html">e contando... <span>∞</span></a>
+            <button class="date-message reminder-button" id="anniversary-reminder" type="button">ativar lembrete mensal <span>♡</span></button>
         </div>
       </section>
 
+      <section class="couple-space section-wrap" id="couple-space" aria-label="Nosso cantinho a dois"></section>
+
       <section class="home-links section-wrap">
-        <a href="historia.html"><span>✿</span><strong>nossa história</strong><small>o começo de tudo bonito</small><b>↗</b></a>
-        <a href="momentos.html"><span>✦</span><strong>nossos momentos</strong><small>pequenos infinitos só nossos</small><b>↗</b></a>
-        <a href="playlist.html"><span>♫</span><strong>playlist</strong><small>a trilha do nosso amor</small><b>↗</b></a>
-        <a href="carta.html"><span>♥</span><strong>minha cartinha</strong><small>um carinho escrito para você</small><b>↗</b></a>
+        <a href="pages/historia.html"><span>✿</span><strong>nossa história</strong><small>o começo de tudo bonito</small><b>↗</b></a>
+        <a href="pages/momentos.html"><span>✦</span><strong>nossos momentos</strong><small>pequenos infinitos só nossos</small><b>↗</b></a>
+        <a href="pages/playlist.html"><span>♫</span><strong>playlist</strong><small>a trilha do nosso amor</small><b>↗</b></a>
+        <a href="pages/carta.html"><span>♥</span><strong>minha cartinha</strong><small>um carinho escrito para você</small><b>↗</b></a>
       </section>
     </main>
 
@@ -137,6 +145,6 @@
       </span>
     </footer>
     <div class="toast" id="toast" role="status" aria-live="polite">você é o meu lugar favorito ♥</div>
-    <script src="script.js"></script>
+    <script src="assets/js/script.js?v=6"></script>
   </body>
 </html>
