@@ -32,11 +32,23 @@ function startCoupleSpace() {
         <div class="couple-status-wrap"></div>
         <ol class="chat-feed" data-feed aria-live="polite" aria-label="Mensagens da conversa"></ol>
         <form class="chat-composer" data-message-form>
-          <label class="visually-hidden" for="chat-message">Escreva uma mensagem</label>
-          <textarea id="chat-message" name="message" rows="1" maxlength="300" placeholder="escreva uma mensagem..." required></textarea>
-          <button class="chat-send" type="submit" aria-label="Enviar mensagem">➤</button>
+          <div class="chat-attachment" data-attachment hidden>
+            <img data-image-preview alt="Prévia da foto selecionada" hidden />
+            <audio data-audio-preview controls hidden></audio>
+            <span data-attachment-name></span>
+            <button type="button" data-clear-attachment aria-label="Remover anexo">×</button>
+          </div>
+          <div class="chat-composer-row">
+            <input class="visually-hidden" data-photo-file type="file" accept="image/jpeg,image/png,image/webp" aria-label="Escolha uma foto para enviar" />
+            <button class="chat-tool" type="button" data-photo-pick aria-label="Anexar uma foto" title="Anexar uma foto">▧</button>
+            <button class="chat-tool" type="button" data-record aria-label="Gravar mensagem de voz" title="Gravar mensagem de voz">🎙</button>
+            <span class="chat-record-time" data-record-time aria-live="polite"></span>
+            <label class="visually-hidden" for="chat-message">Escreva uma mensagem</label>
+            <textarea id="chat-message" name="message" rows="1" maxlength="300" placeholder="escreva uma mensagem..."></textarea>
+            <button class="chat-send" type="submit" aria-label="Enviar mensagem">➤</button>
+          </div>
         </form>
-        <p class="chat-hint">só vocês dois, sempre ♥</p>
+        <p class="chat-hint">fotos e mensagens de voz, só para vocês dois ♥</p>
       </section>`;
   } else if (isMomentsPage) {
     root.innerHTML = `
@@ -67,6 +79,15 @@ function startCoupleSpace() {
   let currentUser = null;
   let realtimeChannel = null;
   let handlingSession = false;
+  let pendingAttachment = null;
+  let previewUrl = null;
+  let mediaRecorder = null;
+  let recordingStream = null;
+  let recordingChunks = [];
+  let recordingStartedAt = 0;
+  let recordingTimer = null;
+  let supportsChatMedia = true;
+  const chatMediaMigrationNotice = 'as mensagens de texto funcionam; execute supabase/setup.sql no Supabase para habilitar fotos e mensagens de voz.';
 
   const showStatus = (message, type = 'info') => {
     status.textContent = message;
@@ -75,11 +96,22 @@ function startCoupleSpace() {
 
   const loadMessages = async () => {
     if (!isChatPage) return;
-    const { data, error } = await client
+    let { data, error } = await client
       .from('couple_messages')
-      .select('id,sender_id,message,created_at')
+      .select(supportsChatMedia
+        ? 'id,sender_id,message,media_path,media_type,created_at'
+        : 'id,sender_id,message,created_at')
       .order('created_at', { ascending: true })
       .limit(200);
+    if (error?.code === '42703' && /media_path|media_type/.test(error.message)) {
+      supportsChatMedia = false;
+      showStatus(chatMediaMigrationNotice);
+      ({ data, error } = await client
+        .from('couple_messages')
+        .select('id,sender_id,message,created_at')
+        .order('created_at', { ascending: true })
+        .limit(200));
+    }
     if (error) {
       showStatus(`não consegui carregar as mensagens: ${error.message}`, 'error');
       return;
@@ -94,7 +126,18 @@ function startCoupleSpace() {
       return;
     }
     let previousDay = '';
-    for (const message of data) {
+    const signedMessages = await Promise.all(data.map(async (message) => {
+      if (!message.media_path) return { ...message, mediaUrl: null };
+      const { data: file, error: fileError } = await client.storage
+        .from('couple-chat')
+        .createSignedUrl(message.media_path, 3600);
+      if (fileError) {
+        showStatus(`não consegui abrir um anexo da conversa: ${fileError.message}`, 'error');
+        return { ...message, mediaUrl: null };
+      }
+      return { ...message, mediaUrl: file.signedUrl };
+    }));
+    for (const message of signedMessages) {
       const date = new Date(message.created_at);
       const day = date.toLocaleDateString('pt-BR', { day: '2-digit', month: 'long', year: 'numeric' });
       if (day !== previousDay) {
@@ -106,12 +149,31 @@ function startCoupleSpace() {
       }
       const item = document.createElement('li');
       item.className = `chat-bubble${message.sender_id === currentUser.id ? ' is-mine' : ''}`;
-      const content = document.createElement('p');
-      content.textContent = message.message;
+      if (message.message) {
+        const content = document.createElement('p');
+        content.textContent = message.message;
+        item.append(content);
+      }
+      if (message.mediaUrl && message.media_type?.startsWith('image/')) {
+        const image = document.createElement('img');
+        image.className = 'chat-media-image';
+        image.src = message.mediaUrl;
+        image.alt = 'Foto enviada na conversa';
+        image.loading = 'lazy';
+        item.append(image);
+      } else if (message.mediaUrl && message.media_type?.startsWith('audio/')) {
+        const audio = document.createElement('audio');
+        audio.className = 'chat-media-audio';
+        audio.src = message.mediaUrl;
+        audio.controls = true;
+        audio.preload = 'metadata';
+        audio.setAttribute('aria-label', 'Mensagem de voz');
+        item.append(audio);
+      }
       const time = document.createElement('time');
       time.dateTime = message.created_at;
       time.textContent = date.toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit' });
-      item.append(content, time);
+      item.append(time);
       feed.append(item);
     }
     if (wasAtBottom) feed.scrollTop = feed.scrollHeight;
@@ -238,6 +300,147 @@ function startCoupleSpace() {
   const messageForm = root.querySelector('[data-message-form]');
   if (messageForm) {
     const messageInput = messageForm.elements.message;
+    const photoInput = messageForm.querySelector('[data-photo-file]');
+    const attachmentPanel = messageForm.querySelector('[data-attachment]');
+    const imagePreview = messageForm.querySelector('[data-image-preview]');
+    const audioPreview = messageForm.querySelector('[data-audio-preview]');
+    const attachmentName = messageForm.querySelector('[data-attachment-name]');
+    const photoPickButton = messageForm.querySelector('[data-photo-pick]');
+    const recordButton = messageForm.querySelector('[data-record]');
+    const recordTime = messageForm.querySelector('[data-record-time]');
+    const sendButton = messageForm.querySelector('.chat-send');
+    const maxAttachmentBytes = 10 * 1024 * 1024;
+
+    const clearPendingAttachment = () => {
+      if (previewUrl) URL.revokeObjectURL(previewUrl);
+      previewUrl = null;
+      pendingAttachment = null;
+      imagePreview.hidden = true;
+      imagePreview.removeAttribute('src');
+      audioPreview.pause();
+      audioPreview.hidden = true;
+      audioPreview.removeAttribute('src');
+      attachmentName.textContent = '';
+      attachmentPanel.hidden = true;
+      photoInput.value = '';
+    };
+
+    const showPendingAttachment = (file, type) => {
+      clearPendingAttachment();
+      pendingAttachment = { file, type };
+      previewUrl = URL.createObjectURL(file);
+      attachmentPanel.hidden = false;
+      if (type.startsWith('image/')) {
+        imagePreview.src = previewUrl;
+        imagePreview.hidden = false;
+        attachmentName.textContent = 'foto pronta para enviar';
+      } else {
+        audioPreview.src = previewUrl;
+        audioPreview.hidden = false;
+        attachmentName.textContent = 'mensagem de voz pronta para enviar';
+      }
+    };
+
+    photoPickButton.addEventListener('click', () => photoInput.click());
+    photoInput.addEventListener('change', () => {
+      const file = photoInput.files[0];
+      if (!file) return;
+      if (!['image/jpeg', 'image/png', 'image/webp'].includes(file.type)) {
+        clearPendingAttachment();
+        showStatus('escolha uma foto JPG, PNG ou WebP.', 'error');
+        return;
+      }
+      if (file.size > maxAttachmentBytes) {
+        clearPendingAttachment();
+        showStatus('essa foto passa de 10 MB. Escolha uma menor para enviar.', 'error');
+        return;
+      }
+      showPendingAttachment(file, file.type);
+      showStatus('foto pronta para enviar na conversa.');
+    });
+    messageForm.querySelector('[data-clear-attachment]').addEventListener('click', clearPendingAttachment);
+
+    const stopRecordingTracks = () => {
+      if (recordingTimer) window.clearInterval(recordingTimer);
+      recordingTimer = null;
+      recordingStream?.getTracks().forEach((track) => track.stop());
+      recordingStream = null;
+      recordButton.textContent = '🎙';
+      recordButton.classList.remove('is-recording');
+      recordButton.setAttribute('aria-label', 'Gravar mensagem de voz');
+      recordButton.title = 'Gravar mensagem de voz';
+      recordTime.textContent = '';
+    };
+
+    recordButton.addEventListener('click', async () => {
+      if (mediaRecorder?.state === 'recording') {
+        mediaRecorder.stop();
+        return;
+      }
+      if (pendingAttachment) {
+        showStatus('remova o anexo atual antes de gravar uma mensagem de voz.', 'error');
+        return;
+      }
+      if (!window.isSecureContext || !navigator.mediaDevices?.getUserMedia || !window.MediaRecorder) {
+        showStatus('a gravação de voz precisa de um navegador compatível e conexão segura (HTTPS).', 'error');
+        return;
+      }
+      recordButton.disabled = true;
+      try {
+        recordingStream = await navigator.mediaDevices.getUserMedia({ audio: true });
+        const audioTypes = ['audio/webm;codecs=opus', 'audio/mp4', 'audio/ogg;codecs=opus', 'audio/webm', 'audio/ogg'];
+        const mimeType = audioTypes.find((type) => MediaRecorder.isTypeSupported(type));
+        mediaRecorder = new MediaRecorder(recordingStream, mimeType ? { mimeType } : undefined);
+        recordingChunks = [];
+        mediaRecorder.addEventListener('dataavailable', (event) => {
+          if (event.data.size) recordingChunks.push(event.data);
+        });
+        mediaRecorder.addEventListener('stop', () => {
+          stopRecordingTracks();
+          const blob = new Blob(recordingChunks, { type: mediaRecorder.mimeType || recordingChunks[0]?.type || 'audio/webm' });
+          recordingChunks = [];
+          if (!blob.size) {
+            showStatus('não consegui capturar o áudio. Tente gravar novamente.', 'error');
+            return;
+          }
+          if (blob.size > maxAttachmentBytes) {
+            showStatus('o áudio passou de 10 MB. Grave uma mensagem mais curta.', 'error');
+            return;
+          }
+          const type = blob.type.split(';')[0];
+          const extension = { 'audio/webm': 'webm', 'audio/mp4': 'mp4', 'audio/ogg': 'ogg', 'audio/mpeg': 'mp3', 'audio/aac': 'aac' }[type];
+          if (!extension) {
+            showStatus(`este navegador gravou em um formato não compatível (${type || 'desconhecido'}).`, 'error');
+            return;
+          }
+          showPendingAttachment(new File([blob], `mensagem-de-voz.${extension}`, { type }), type);
+          showStatus('mensagem de voz pronta para enviar.');
+        });
+        mediaRecorder.addEventListener('error', () => {
+          stopRecordingTracks();
+          showStatus('ocorreu um erro durante a gravação de voz.', 'error');
+        });
+        mediaRecorder.start();
+        recordingStartedAt = Date.now();
+        recordButton.textContent = '■';
+        recordButton.classList.add('is-recording');
+        recordButton.setAttribute('aria-label', 'Parar gravação');
+        recordButton.title = 'Parar gravação';
+        recordTime.textContent = '00:00';
+        recordingTimer = window.setInterval(() => {
+          const elapsed = Math.floor((Date.now() - recordingStartedAt) / 1000);
+          recordTime.textContent = `${String(Math.floor(elapsed / 60)).padStart(2, '0')}:${String(elapsed % 60).padStart(2, '0')}`;
+          if (elapsed >= 120) mediaRecorder.stop();
+        }, 1000);
+        showStatus('gravando sua mensagem de voz... toque em parar quando terminar.');
+      } catch (error) {
+        stopRecordingTracks();
+        showStatus(`não consegui acessar o microfone: ${error.message}`, 'error');
+      } finally {
+        recordButton.disabled = false;
+      }
+    });
+
     messageInput.addEventListener('input', () => {
       messageInput.style.height = 'auto';
       messageInput.style.height = `${Math.min(messageInput.scrollHeight, 120)}px`;
@@ -251,24 +454,56 @@ function startCoupleSpace() {
     messageForm.addEventListener('submit', async (event) => {
       event.preventDefault();
       const message = messageInput.value.trim();
-      if (!message || !currentUser) return;
-      const sendButton = messageForm.querySelector('button[type="submit"]');
+      if ((!message && !pendingAttachment) || !currentUser || mediaRecorder?.state === 'recording') return;
+      if (pendingAttachment && !supportsChatMedia) {
+        showStatus(chatMediaMigrationNotice, 'error');
+        return;
+      }
       sendButton.disabled = true;
-      const { error } = await client.from('couple_messages').insert({
+      let objectPath = null;
+      if (pendingAttachment) {
+        const extension = pendingAttachment.file.name.split('.').pop();
+        objectPath = `${currentUser.id}/${crypto.randomUUID()}.${extension}`;
+        const { error: uploadError } = await client.storage
+          .from('couple-chat')
+          .upload(objectPath, pendingAttachment.file, { contentType: pendingAttachment.type, upsert: false });
+        if (uploadError) {
+          sendButton.disabled = false;
+          showStatus(`não consegui enviar o anexo: ${uploadError.message}`, 'error');
+          return;
+        }
+      }
+      const newMessage = {
         sender_id: currentUser.id,
-        message,
-      });
+        message: message || '',
+      };
+      if (supportsChatMedia) {
+        newMessage.media_path = objectPath;
+        newMessage.media_type = pendingAttachment?.type || null;
+      }
+      const { error } = await client.from('couple_messages').insert(newMessage);
       sendButton.disabled = false;
       if (error) {
-        showStatus(`não consegui enviar a mensagem: ${error.message}`, 'error');
+        let cleanupNote = '';
+        if (objectPath) {
+          const { error: cleanupError } = await client.storage.from('couple-chat').remove([objectPath]);
+          if (cleanupError) cleanupNote = ` O anexo também não pôde ser removido: ${cleanupError.message}`;
+        }
+        showStatus(`não consegui enviar a mensagem: ${error.message}.${cleanupNote}`, 'error');
         return;
       }
       messageInput.value = '';
       messageInput.style.height = 'auto';
+      clearPendingAttachment();
       showStatus('mensagem enviada ♥');
       await loadMessages();
       messageInput.focus();
     });
+    window.addEventListener('pagehide', () => {
+      if (mediaRecorder?.state === 'recording') mediaRecorder.stop();
+      stopRecordingTracks();
+      if (previewUrl) URL.revokeObjectURL(previewUrl);
+    }, { once: true });
   }
 
   const photoForm = root.querySelector('[data-photo-form]');

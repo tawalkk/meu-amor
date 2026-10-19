@@ -43,9 +43,38 @@ grant execute on function public.resolve_couple_login(text) to anon, authenticat
 create table if not exists public.couple_messages (
   id uuid primary key default gen_random_uuid(),
   sender_id uuid not null references auth.users(id) on delete cascade,
-  message text not null check (char_length(message) between 1 and 300),
+  message text not null default '',
+  media_path text,
+  media_type text,
   created_at timestamptz not null default now()
 );
+
+alter table public.couple_messages
+  add column if not exists media_path text,
+  add column if not exists media_type text;
+
+alter table public.couple_messages
+  alter column message set default '';
+
+alter table public.couple_messages
+  drop constraint if exists couple_messages_message_check,
+  drop constraint if exists couple_messages_content_check,
+  drop constraint if exists couple_messages_media_pair_check;
+
+alter table public.couple_messages
+  add constraint couple_messages_content_check
+    check (
+      char_length(message) <= 300
+      and (char_length(message) > 0 or media_path is not null)
+    ),
+  add constraint couple_messages_media_pair_check
+    check (
+      (media_path is null and media_type is null)
+      or (
+        media_path is not null
+        and media_type in ('image/jpeg', 'image/png', 'image/webp', 'audio/webm', 'audio/mp4', 'audio/ogg', 'audio/mpeg', 'audio/aac')
+      )
+    );
 
 create table if not exists public.couple_photos (
   id uuid primary key default gen_random_uuid(),
@@ -93,7 +122,11 @@ create policy "couple members can read messages"
 drop policy if exists "couple members can send messages as themselves" on public.couple_messages;
 create policy "couple members can send messages as themselves"
   on public.couple_messages for insert to authenticated
-  with check (public.is_couple_member() and sender_id = (select auth.uid()));
+  with check (
+    public.is_couple_member()
+    and sender_id = (select auth.uid())
+    and (media_path is null or media_path like ((select auth.uid())::text || '/%'))
+  );
 
 drop policy if exists "couple members can read photos" on public.couple_photos;
 create policy "couple members can read photos"
@@ -112,6 +145,19 @@ create policy "members can delete their own photo records"
 
 insert into storage.buckets (id, name, public, file_size_limit, allowed_mime_types)
 values ('couple-moments', 'couple-moments', false, 10485760, array['image/jpeg', 'image/png', 'image/webp'])
+on conflict (id) do update
+set public = false,
+    file_size_limit = excluded.file_size_limit,
+    allowed_mime_types = excluded.allowed_mime_types;
+
+insert into storage.buckets (id, name, public, file_size_limit, allowed_mime_types)
+values (
+  'couple-chat',
+  'couple-chat',
+  false,
+  10485760,
+  array['image/jpeg', 'image/png', 'image/webp', 'audio/webm', 'audio/mp4', 'audio/ogg', 'audio/mpeg', 'audio/aac']
+)
 on conflict (id) do update
 set public = false,
     file_size_limit = excluded.file_size_limit,
@@ -136,6 +182,29 @@ create policy "couple members can delete their own uploaded files"
   on storage.objects for delete to authenticated
   using (
     bucket_id = 'couple-moments'
+    and public.is_couple_member()
+    and (storage.foldername(name))[1] = (select auth.uid())::text
+  );
+
+drop policy if exists "couple members can read chat attachments" on storage.objects;
+create policy "couple members can read chat attachments"
+  on storage.objects for select to authenticated
+  using (bucket_id = 'couple-chat' and public.is_couple_member());
+
+drop policy if exists "couple members can upload their chat attachments" on storage.objects;
+create policy "couple members can upload their chat attachments"
+  on storage.objects for insert to authenticated
+  with check (
+    bucket_id = 'couple-chat'
+    and public.is_couple_member()
+    and (storage.foldername(name))[1] = (select auth.uid())::text
+  );
+
+drop policy if exists "couple members can remove their chat uploads" on storage.objects;
+create policy "couple members can remove their chat uploads"
+  on storage.objects for delete to authenticated
+  using (
+    bucket_id = 'couple-chat'
     and public.is_couple_member()
     and (storage.foldername(name))[1] = (select auth.uid())::text
   );

@@ -29,9 +29,9 @@ Requisitos do build: Node.js 22 ou mais recente e Android Studio com o Android S
 
 Hospede a pasta em um endereço HTTPS e abra no Chrome do Android. Use **Instalar app** quando aparecer. O modo offline fica disponível depois que o app carrega uma vez. No APK nativo, o botão de lembrete agenda uma notificação mensal local; no navegador, o lembrete só pode ser exibido quando o app é aberto no dia.
 
-## Recadinhos e fotos compartilhados entre dois celulares
+## Conversa e fotos compartilhadas entre dois celulares
 
-As interações privadas precisam de internet, HTTPS e de um projeto Supabase; publicar apenas os arquivos no GitHub Pages não cria armazenamento nem sincronização. O site continua funcionando sem configurar essa integração, mas os recadinhos e uploads ficam desativados até a configuração ser concluída.
+As interações privadas precisam de internet, HTTPS e de um projeto Supabase; publicar apenas os arquivos no GitHub Pages não cria armazenamento nem sincronização. O site continua funcionando sem configurar essa integração, mas o chat e os uploads ficam desativados até a configuração ser concluída.
 
 **Importante:** o login nas páginas estático é uma barreira de navegação, não transforma o conteúdo do GitHub Pages em privado. Arquivos que já estão no repositório (incluindo fotos) podem ser acessados diretamente por qualquer pessoa. A segurança real dos recadinhos e das novas fotos vem do Supabase e das regras RLS/bucket privado; não envie fotos que devam permanecer secretas para `web/assets/images`.
 
@@ -42,4 +42,4 @@ As interações privadas precisam de internet, HTTPS e de um projeto Supabase; p
 5. No Supabase, abra **Project Settings → API Keys** e use somente o **Project URL** e a chave pública **Publishable/anon** em [`web/assets/js/couple-config.js`](./web/assets/js/couple-config.js). Nunca use `service_role`.
 6. Gere os arquivos web com `npm run prepare:web` e publique o conteúdo da pasta `www` no GitHub Pages. O workflow em `.github/workflows/pages.yml` também publica o site a cada atualização na branch `main`.
 
-O site mostra uma tela de login antes das páginas e mantém a sessão em cada celular. A página **conversa** oferece um chat privado em tempo real, e a página **momentos** permite enviar fotos JPG, PNG ou WebP de até 10 MB para o bucket privado. Cada pessoa pode remover as próprias fotos pelo botão exibido no álbum. Não publique a chave `service_role` nem remova as políticas de segurança do SQL.
+O site mostra uma tela de login antes das páginas e mantém a sessão em cada celular. A página **conversa** oferece um chat privado em tempo real, com envio de fotos e gravações de voz de até 10 MB, além do modo noturno compartilhado com o restante do site. A página **momentos** permite enviar fotos JPG, PNG ou WebP de até 10 MB para o bucket privado; cada pessoa pode remover as próprias fotos pelo botão exibido no álbum. Se o SQL já foi executado anteriormente, execute `supabase/setup.sql` novamente para habilitar anexos e gravações de voz. Não publique a chave `service_role` nem remova as políticas de segurança do SQL.

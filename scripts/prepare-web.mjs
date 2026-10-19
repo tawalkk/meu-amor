@@ -29,7 +29,7 @@ await build({
 
 for (const page of ['www/index.html', ...['carta', 'chuva', 'conversa', 'historia', 'login', 'momentos', 'playlist', 'teste-relogio'].map((name) => `www/pages/${name}.html`)]) {
   const html = (await readFile(page, 'utf8'))
-    .replaceAll('site-auth.js"', 'site-auth.js?v=17"');
+    .replaceAll('site-auth.js"', 'site-auth.js?v=18"');
   const assetPrefix = page.includes('/pages/') ? '../assets/' : 'assets/';
   const scripts = `<script src="${assetPrefix}js/native-notifications.js"></script>`;
   await writeFile(page, html.replace('</body>', `  ${scripts}\n  </body>`));
