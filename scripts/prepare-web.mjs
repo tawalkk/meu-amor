@@ -2,6 +2,7 @@ import { cp, mkdir, readFile, rm, writeFile } from 'node:fs/promises';
 import { build } from 'esbuild';
 
 const webSource = 'web';
+const assetVersion = 22;
 const files = ['index.html', 'manifest.webmanifest', 'service-worker.js', 'assets', 'pages'];
 if (!process.argv.includes('--android')) files.push('downloads');
 await rm('www', { recursive: true, force: true });
@@ -37,8 +38,10 @@ await build({
 
 for (const page of ['www/index.html', ...['carta', 'chuva', 'conversa', 'historia', 'login', 'momentos', 'playlist', 'teste-relogio', 'espaco', 'linha-do-tempo', 'cartinhas', 'diario', 'planos', 'desejos', 'recadinhos', 'perguntas', 'calendario'].map((name) => `www/pages/${name}.html`)]) {
   const html = (await readFile(page, 'utf8'))
-    .replaceAll('site-auth.js"', 'site-auth.js?v=21"')
-    .replace(/script\.js(?:\?v=\d+)?"/g, 'script.js?v=21"')
+    .replaceAll('site-auth.js"', `site-auth.js?v=${assetVersion}"`)
+    .replace(/script\.js(?:\?v=\d+)?"/g, `script.js?v=${assetVersion}"`)
+    .replace(/(couple-interactions|shared-features)\.js(?:\?v=\d+)?"/g, `$1.js?v=${assetVersion}"`)
+    .replace(/(couple|shared-features)\.css(?:\?v=\d+)?"/g, `$1.css?v=${assetVersion}"`)
     .replace(/\s*<link rel="(?:icon|apple-touch-icon)"[^>]*>/g, '');
   const assetPrefix = page.includes('/pages/') ? '../assets/' : 'assets/';
   const icons = `    <link rel="icon" type="image/png" href="${assetPrefix}images/icon_appandsite.png" />\n    <link rel="apple-touch-icon" href="${assetPrefix}images/icon_appandsite.png" />\n`;
