@@ -29,7 +29,6 @@ function startCoupleSpace() {
         <span class="couple-heading-heart" aria-hidden="true">♥</span>
       </div>
       <p class="couple-status" data-status role="status" aria-live="polite">conectando ao nosso cantinho...</p>
-      <div class="couple-auth" data-auth></div>
       <div class="couple-private" data-private hidden>
         <div class="couple-account"><span data-account></span></div>
         <form class="couple-message-form" data-message-form>
@@ -58,7 +57,6 @@ function startCoupleSpace() {
     </section>`;
 
   const status = root.querySelector('[data-status]');
-  const authRegion = root.querySelector('[data-auth]');
   const privateRegion = root.querySelector('[data-private]');
   const feed = root.querySelector('[data-feed]');
   let currentUser = null;
@@ -68,48 +66,6 @@ function startCoupleSpace() {
   const showStatus = (message, type = 'info') => {
     status.textContent = message;
     status.dataset.kind = type;
-  };
-
-  const showLogin = () => {
-    privateRegion.hidden = true;
-    authRegion.innerHTML = `
-      <form class="couple-login-form" data-login-form>
-        <label for="couple-email">seu e-mail</label>
-        <input id="couple-email" name="email" type="email" autocomplete="email" required />
-        <label for="couple-password">senha (mínimo 8 caracteres)</label>
-        <input id="couple-password" name="password" type="password" minlength="8" autocomplete="current-password" required />
-        <div class="couple-auth-buttons">
-          <button class="couple-button" type="submit">entrar</button>
-          <button class="couple-outline-button" type="button" data-signup>criar minha conta</button>
-        </div>
-      </form>`;
-
-    authRegion.querySelector('[data-login-form]').addEventListener('submit', async (event) => {
-      event.preventDefault();
-      const form = new FormData(event.currentTarget);
-      showStatus('entrando no cantinho de vocês...');
-      const { error } = await client.auth.signInWithPassword({
-        email: form.get('email').trim(),
-        password: form.get('password'),
-      });
-      if (error) showStatus(authErrorMessage(error), 'error');
-    });
-
-    authRegion.querySelector('[data-signup]').addEventListener('click', async () => {
-      const form = authRegion.querySelector('[data-login-form]');
-      if (!form.reportValidity()) return;
-      const values = new FormData(form);
-      showStatus('criando sua conta...');
-      const { data, error } = await client.auth.signUp({
-        email: values.get('email').trim(),
-        password: values.get('password'),
-      });
-      if (error) {
-        showStatus(authErrorMessage(error), 'error');
-      } else if (!data.session) {
-        showStatus('conta criada! confirme seu e-mail pelo link que enviamos e depois entre por aqui.');
-      }
-    });
   };
 
   const loadMessages = async () => {
@@ -228,21 +184,8 @@ function startCoupleSpace() {
       }
       currentUser = session?.user || null;
       if (!currentUser) {
-        showLogin();
-        feed.replaceChildren();
-        document.querySelectorAll('[data-shared-photo]').forEach((photo) => photo.remove());
-        showStatus('entre com sua conta para mandar carinhos e compartilhar fotos.');
         return;
       }
-      authRegion.innerHTML = `
-        <div class="couple-account">
-          <span>conectado como ${escapeHtml(currentUser.email || '')}</span>
-          <button class="couple-text-button" type="button" data-signout>sair</button>
-        </div>`;
-      authRegion.querySelector('[data-signout]').addEventListener('click', async () => {
-        const { error } = await client.auth.signOut();
-        if (error) showStatus(`não consegui sair da conta: ${error.message}`, 'error');
-      });
       privateRegion.hidden = true;
       await activateMember();
     } finally {
@@ -331,14 +274,4 @@ function startCoupleSpace() {
     if (error) showStatus(`não consegui verificar a sessão: ${error.message}`, 'error');
     else void handleSession(data.session);
   });
-}
-
-function authErrorMessage(error) {
-  if (error.message.includes('Invalid login credentials')) return 'e-mail ou senha incorretos.';
-  if (error.message.includes('Email not confirmed')) return 'confirme o e-mail pelo link enviado antes de entrar.';
-  return `não consegui autenticar: ${error.message}`;
-}
-
-function escapeHtml(value) {
-  return value.replaceAll('&', '&amp;').replaceAll('<', '&lt;').replaceAll('>', '&gt;').replaceAll('"', '&quot;').replaceAll("'", '&#39;');
 }

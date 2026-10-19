@@ -15,17 +15,23 @@ await build({
   entryPoints: ['scripts/couple-interactions.mjs'],
   bundle: true,
   format: 'iife',
-  outfile: 'www/assets/js/couple-interactions.js',
+  minify: true,
+  outfile: 'assets/js/couple-interactions.js',
 });
+await cp('assets/js/couple-interactions.js', 'www/assets/js/couple-interactions.js');
+await build({
+  entryPoints: ['scripts/site-auth.mjs'],
+  bundle: true,
+  format: 'iife',
+  minify: true,
+  outfile: 'assets/js/site-auth.js',
+});
+await cp('assets/js/site-auth.js', 'www/assets/js/site-auth.js');
 
-for (const page of ['www/index.html', ...['carta', 'chuva', 'historia', 'momentos', 'playlist', 'teste-relogio'].map((name) => `www/pages/${name}.html`)]) {
+for (const page of ['www/index.html', ...['carta', 'chuva', 'historia', 'login', 'momentos', 'playlist', 'teste-relogio'].map((name) => `www/pages/${name}.html`)]) {
   const html = await readFile(page, 'utf8');
   const assetPrefix = page.includes('/pages/') ? '../assets/' : 'assets/';
-  const scripts = [
-    `<script src="${assetPrefix}js/couple-config.js"></script>`,
-    `<script src="${assetPrefix}js/couple-interactions.js"></script>`,
-    `<script src="${assetPrefix}js/native-notifications.js"></script>`,
-  ].join('\n  ');
+  const scripts = `<script src="${assetPrefix}js/native-notifications.js"></script>`;
   await writeFile(page, html.replace('</body>', `  ${scripts}\n  </body>`));
 }
 

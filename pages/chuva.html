@@ -3,6 +3,7 @@
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <script>document.documentElement.classList.add('auth-pending')</script>
     <meta name="theme-color" content="#f45d9b" />
     <title>Chuva de carinho | Nosso segundo mês</title>
     <link rel="preconnect" href="https://fonts.googleapis.com" />
@@ -11,6 +12,7 @@
     <link rel="stylesheet" href="../assets/css/styles.css" />
     <link rel="stylesheet" href="../assets/css/modern.css" />
     <link rel="stylesheet" href="../assets/css/social.css" />
+    <link rel="stylesheet" href="../assets/css/auth.css" />
     <style>
       .rain-page{position:relative;min-height:calc(100vh - 157px);display:grid;place-items:center;overflow:hidden;padding:70px 20px}.rain-back{position:absolute;top:28px;left:20px;z-index:3;margin:0}.rain-back a{color:var(--pink);font-size:11px;text-decoration:none;text-transform:uppercase;letter-spacing:1.5px}.rain-content{position:relative;z-index:2;width:min(600px,100%);padding:54px 28px;text-align:center;background:#fffaf5e8;border:1px solid var(--border);border-radius:24px;box-shadow:0 20px 60px #b9799e24}.rain-content h1{margin:0;color:var(--ink);font:700 clamp(44px,8vw,76px)/.9 'Baloo 2',sans-serif}.rain-content h1 em{color:var(--pink);font-style:normal}.rain-content p{margin:22px auto 0;max-width:400px;color:var(--muted);font-size:15px;line-height:1.7}.rain-heart{position:absolute;top:-40px;color:var(--pink);font-size:20px;pointer-events:none;animation:rainFall linear forwards}.rain-heart:nth-child(3n){color:#eaa044}.rain-heart:nth-child(4n){font-size:14px;color:#e98ab4}@keyframes rainFall{to{transform:translateY(115vh) rotate(360deg);opacity:0}}.rain-button{display:inline-flex;margin-top:28px;padding:13px 20px;border:1px solid var(--pink);border-radius:999px;background:var(--pink);color:#fff;text-decoration:none;font-size:11px;font-weight:700;letter-spacing:1px;text-transform:uppercase}@media(max-width:560px){.rain-page{padding:38px 14px}.rain-back{top:16px;left:14px}.rain-content{padding:42px 20px}.rain-content p{font-size:13px}}
     </style>
@@ -46,6 +48,8 @@
     </footer>
 
     <script src="../assets/js/script.js"></script>
+    <script src="../assets/js/couple-config.js"></script>
+    <script src="../assets/js/site-auth.js"></script>
     <script>
       const rainPage = document.querySelector('#rain-page');
       const createRainHeart = () => {

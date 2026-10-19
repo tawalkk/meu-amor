@@ -24,18 +24,21 @@ Hospede a pasta em um endereço HTTPS e abra no Chrome do Android. Use **Instala
 
 As interações privadas precisam de internet, HTTPS e de um projeto Supabase; publicar apenas os arquivos no GitHub Pages não cria armazenamento nem sincronização. O site continua funcionando sem configurar essa integração, mas os recadinhos e uploads ficam desativados até a configuração ser concluída.
 
+**Importante:** o login nas páginas estático é uma barreira de navegação, não transforma o conteúdo do GitHub Pages em privado. Arquivos que já estão no repositório (incluindo fotos) podem ser acessados diretamente por qualquer pessoa. A segurança real dos recadinhos e das novas fotos vem do Supabase e das regras RLS/bucket privado; não envie fotos que devam permanecer secretas para `assets/images`.
+
 1. Crie um projeto no Supabase e abra **SQL Editor**.
 2. Execute todo o conteúdo de [`supabase/setup.sql`](./supabase/setup.sql). Ele cria as tabelas, políticas privadas (RLS), bucket privado para fotos e canais em tempo real.
-3. Publique o site por HTTPS e, em **Authentication → URL Configuration**, defina o endereço publicado como **Site URL** e como endereço de redirecionamento permitido.
-4. No Supabase, abra **Project Settings → API** e copie o **Project URL** e a chave pública **anon** (nunca use `service_role`). Preencha esses dois valores em [`assets/js/couple-config.js`](./assets/js/couple-config.js).
-5. Gere os arquivos web com `npm run prepare:web` e publique o conteúdo da pasta `www` no GitHub Pages.
-6. Cada pessoa cria uma conta pela seção **nosso cantinho a dois** e confirma o e-mail. Depois, no **SQL Editor**, libere somente essas duas contas, substituindo os e-mails:
+3. A tela de login usa os nomes `kahique` e `lalavs`, associados aos endereços internos `kahique@meu-amor.invalid` e `lalavs@meu-amor.invalid`. No Supabase, abra **Authentication → Users → Add user**, crie essas duas contas com senhas novas e fortes e marque cada e-mail como confirmado. O domínio `.invalid` é intencional: não recebe e-mails. Não reutilize a senha que foi compartilhada no chat.
+4. Como as contas são criadas diretamente pelo painel, os usuários não precisam clicar em confirmação por e-mail. Desative o cadastro público em **Authentication → Settings / Sign-in**; a tela do site só permite entrar.
+5. No Supabase, abra **Project Settings → API Keys** e use somente o **Project URL** e a chave pública **Publishable/anon** em [`assets/js/couple-config.js`](./assets/js/couple-config.js). Nunca use `service_role`.
+6. Gere os arquivos web com `npm run prepare:web` e publique o conteúdo da pasta `www` no GitHub Pages. O workflow em `.github/workflows/pages.yml` também publica o site a cada atualização na branch `main`.
+7. No **SQL Editor**, libere somente as contas do casal:
 
    ```sql
    insert into public.couple_members (user_id)
    select id from auth.users
-   where email in ('SEU_EMAIL', 'EMAIL_DELA')
+   where email in ('kahique@meu-amor.invalid', 'lalavs@meu-amor.invalid')
    on conflict (user_id) do nothing;
    ```
 
-Depois de entrar, os recadinhos aparecem nos dois celulares em tempo real. Na página **momentos**, uma foto JPG, PNG ou WebP de até 10 MB é enviada para o bucket privado e aparece automaticamente no álbum compartilhado. Não publique a chave `service_role` nem remova as políticas de segurança do SQL.
+O site mostra uma tela de login antes das páginas e mantém a sessão em cada celular. Depois de entrar, os recadinhos aparecem nos dois celulares em tempo real. Na página **momentos**, uma foto JPG, PNG ou WebP de até 10 MB é enviada para o bucket privado e aparece automaticamente no álbum compartilhado. Não publique a chave `service_role` nem remova as políticas de segurança do SQL.
