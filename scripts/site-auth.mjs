@@ -2,7 +2,7 @@ import { createClient } from '@supabase/supabase-js';
 
 const config = window.MeuAmorSupabaseConfig;
 const isLoginPage = document.body.classList.contains('login-page');
-const siteBase = new URL('../', document.currentScript.src);
+const siteBase = new URL('../../', document.currentScript.src);
 
 if (!config?.url || !config?.anonKey) {
   if (isLoginPage) {
