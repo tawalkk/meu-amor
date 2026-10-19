@@ -24,6 +24,10 @@
       .home-links a>span{color:var(--pink);font-size:22px}.home-links strong{font:700 21px 'Baloo 2',sans-serif}.home-links small{color:var(--muted);font-size:11px}.home-links b{position:absolute;right:20px;bottom:18px;color:var(--pink);font-size:19px}
       .counter{display:flex;flex-direction:column;align-items:flex-start;justify-content:center;gap:5px}.counter-main{display:flex;align-items:baseline;gap:10px}.counter-extra{font-size:11px;line-height:1.1;color:var(--muted);opacity:.85;letter-spacing:.2px}
       .hero-copy{position:relative;z-index:2}
+      .hero-actions{display:flex;align-items:center;flex-wrap:wrap;gap:10px}
+      .download-app-button{display:inline-flex;align-items:center;gap:10px;min-height:52px;padding:14px 18px;border:1px solid #f3cedd;border-radius:999px;background:#fff;color:var(--pink);font-size:11px;font-weight:700;text-decoration:none;text-transform:uppercase;letter-spacing:.7px;transition:transform .2s,box-shadow .2s}
+      .download-app-button:hover{transform:translateY(-2px);box-shadow:0 8px 18px #b9799e22}
+      .download-app-button span{font-size:18px}
       .hero-art{position:relative;z-index:1;overflow:visible;min-height:420px}
       .hero-art .character{position:absolute;display:flex;align-items:flex-end;justify-content:center;z-index:1}
       .hero-art .character img{display:block;max-width:100%;height:auto;filter:drop-shadow(0 14px 20px rgba(168,92,126,.16));}
@@ -84,8 +88,11 @@
           <p class="eyebrow"><span>♥</span> um pedacinho do nosso amor</p>
           <h1 id="relationship-title">Nosso segundo<br /><em>mês</em> juntinho.</h1>
           <p class="hero-text">Dois meses de nós: tantos sorrisos, abraços e pequenas lembranças que já parecem um universo inteiro.</p>
-          <a class="primary-button" href="pages/carta.html">abrir minha cartinha <span>↗</span></a>
-          <button class="install-app-button" id="install-app" type="button" hidden>instalar nosso app <span>↓</span></button>
+          <div class="hero-actions">
+            <a class="primary-button" href="pages/carta.html">abrir minha cartinha <span>↗</span></a>
+            <a class="download-app-button" href="downloads/Nosso-amor.apk" download="Nosso-amor.apk">baixar app Android <span aria-hidden="true">↓</span></a>
+            <button class="install-app-button" id="install-app" type="button" hidden>instalar nosso app <span>↓</span></button>
+          </div>
           <div class="hero-note"><span class="note-line"></span><span>feito com carinho para você</span></div>
         </div>
 
