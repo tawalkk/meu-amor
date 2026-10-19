@@ -1,64 +1,69 @@
 import { createClient } from '@supabase/supabase-js';
 
 const config = window.MeuAmorSupabaseConfig;
-const coupleSpace = document.querySelector('#couple-space');
-if (!coupleSpace) {
-  // Interaction UI is only needed on the home and shared-moments pages.
-} else if (!config?.url || !config?.anonKey) {
-  coupleSpace.innerHTML = `
-    <section class="couple-panel">
-      <p class="eyebrow"><span>♡</span> nosso cantinho a dois</p>
-      <h2>um carinho de cada celular</h2>
-      <p class="couple-status" role="status">A conexão privada ainda precisa ser configurada para sincronizar recadinhos e fotos entre vocês.</p>
-    </section>`;
-} else {
-  startCoupleSpace();
-}
+const root = document.querySelector('#couple-chat, #couple-space');
+
+if (root && config?.url && config?.anonKey) startCoupleSpace();
 
 function startCoupleSpace() {
   const client = createClient(config.url, config.anonKey);
-  const root = coupleSpace;
-  const isMomentsPage = Boolean(document.querySelector('.photo-grid'));
-  root.innerHTML = `
-    <section class="couple-panel">
-      <div class="couple-heading">
-        <div>
-          <p class="eyebrow"><span>♡</span> nosso cantinho a dois</p>
-          <h2>um carinho de cada celular</h2>
-        </div>
-        <span class="couple-heading-heart" aria-hidden="true">♥</span>
-      </div>
-      <p class="couple-status" data-status role="status" aria-live="polite">conectando ao nosso cantinho...</p>
-      <div class="couple-private" data-private hidden>
-        <div class="couple-account"><span data-account></span></div>
-        <form class="couple-message-form" data-message-form>
-          <label for="couple-message">mande um carinho para aparecer no celular dela</label>
-          <div class="couple-message-controls">
-            <input id="couple-message" name="message" maxlength="300" placeholder="estou pensando em você..." required />
-            <button class="couple-button" type="submit">enviar ♥</button>
+  const isChatPage = root.dataset.coupleView === 'chat';
+  const isMomentsPage = root.dataset.coupleView === 'photos';
+  const status = document.createElement('p');
+  status.className = 'couple-status';
+  status.dataset.status = '';
+  status.setAttribute('role', 'status');
+  status.setAttribute('aria-live', 'polite');
+  status.textContent = 'conectando ao nosso cantinho...';
+
+  if (isChatPage) {
+    root.innerHTML = `
+      <section class="couple-panel chat-panel">
+        <header class="chat-heading">
+          <a class="chat-back" href="../index.html" aria-label="Voltar ao início">‹</a>
+          <span class="chat-avatar" aria-hidden="true">♥</span>
+          <div class="chat-heading-copy">
+            <p class="eyebrow">nosso cantinho privado</p>
+            <h1>nós dois</h1>
+            <span class="chat-presence" data-presence>conectando...</span>
           </div>
-          <button class="couple-heart-button" type="button" data-send-heart>mandar um coração agora ♥</button>
+          <a class="chat-gallery-link" href="momentos.html" aria-label="Abrir nossos momentos">✦</a>
+        </header>
+        <div class="chat-status-wrap"></div>
+        <ol class="chat-feed" data-feed aria-live="polite" aria-label="Mensagens da conversa"></ol>
+        <form class="chat-composer" data-message-form>
+          <label class="visually-hidden" for="chat-message">Escreva uma mensagem</label>
+          <textarea id="chat-message" name="message" rows="1" maxlength="300" placeholder="escreva uma mensagem..." required></textarea>
+          <button class="chat-send" type="submit" aria-label="Enviar mensagem">➤</button>
         </form>
-        <div class="couple-feed-wrap">
-          <h3>carinhos de vocês</h3>
-          <ol class="couple-feed" data-feed aria-live="polite"></ol>
+        <p class="chat-hint">só vocês dois, sempre ♥</p>
+      </section>`;
+  } else if (isMomentsPage) {
+    root.innerHTML = `
+      <section class="couple-panel">
+        <div class="couple-heading">
+          <div><p class="eyebrow"><span>♡</span> nosso álbum compartilhado</p><h2>guardar um momento</h2></div>
+          <span class="couple-heading-heart" aria-hidden="true">✦</span>
         </div>
-        ${isMomentsPage ? `
+        <div class="couple-status-wrap"></div>
+        <div class="couple-private" data-private hidden>
           <form class="couple-photo-form" data-photo-form>
-            <h3>guardar um momento de vocês</h3>
-            <label for="couple-photo">escolha uma foto para adicionar automaticamente ao álbum</label>
+            <label for="couple-photo">escolha uma foto JPG, PNG ou WebP (até 10 MB)</label>
             <input id="couple-photo" name="photo" type="file" accept="image/jpeg,image/png,image/webp" required />
             <label for="couple-caption">legenda (opcional)</label>
             <input id="couple-caption" name="caption" maxlength="120" placeholder="um dia muito especial..." />
             <button class="couple-button" type="submit">adicionar aos nossos momentos ✦</button>
-          </form>` : `
-          <a class="couple-moments-link" href="pages/momentos.html">adicionar fotos em nossos momentos ↗</a>`}
-      </div>
-    </section>`;
+          </form>
+        </div>
+      </section>`;
+  } else {
+    return;
+  }
 
-  const status = root.querySelector('[data-status]');
+  root.querySelector('.couple-status-wrap').append(status);
   const privateRegion = root.querySelector('[data-private]');
   const feed = root.querySelector('[data-feed]');
+  const presence = root.querySelector('[data-presence]');
   let currentUser = null;
   let realtimeChannel = null;
   let handlingSession = false;
@@ -69,43 +74,52 @@ function startCoupleSpace() {
   };
 
   const loadMessages = async () => {
+    if (!isChatPage) return;
     const { data, error } = await client
       .from('couple_messages')
       .select('id,sender_id,message,created_at')
-      .order('created_at', { ascending: false })
-      .limit(20);
+      .order('created_at', { ascending: true })
+      .limit(200);
     if (error) {
-      showStatus(`não consegui carregar os recadinhos: ${error.message}`, 'error');
+      showStatus(`não consegui carregar as mensagens: ${error.message}`, 'error');
       return;
     }
+    const wasAtBottom = feed.scrollHeight - feed.scrollTop - feed.clientHeight < 100;
     feed.replaceChildren();
     if (!data.length) {
       const emptyMessage = document.createElement('li');
-      emptyMessage.className = 'couple-feed-empty';
-      emptyMessage.textContent = 'o primeiro carinho de vocês pode aparecer aqui ♥';
+      emptyMessage.className = 'chat-empty';
+      emptyMessage.textContent = 'mandem a primeira mensagem um para o outro ♥';
       feed.append(emptyMessage);
       return;
     }
+    let previousDay = '';
     for (const message of data) {
+      const date = new Date(message.created_at);
+      const day = date.toLocaleDateString('pt-BR', { day: '2-digit', month: 'long', year: 'numeric' });
+      if (day !== previousDay) {
+        const separator = document.createElement('li');
+        separator.className = 'chat-day';
+        separator.textContent = day;
+        feed.append(separator);
+        previousDay = day;
+      }
       const item = document.createElement('li');
-      item.className = `couple-feed-item${message.sender_id === currentUser.id ? ' is-mine' : ''}`;
-      const sender = document.createElement('strong');
-      sender.textContent = message.sender_id === currentUser.id ? 'você' : 'seu amor';
+      item.className = `chat-bubble${message.sender_id === currentUser.id ? ' is-mine' : ''}`;
       const content = document.createElement('p');
       content.textContent = message.message;
       const time = document.createElement('time');
       time.dateTime = message.created_at;
-      time.textContent = new Date(message.created_at).toLocaleString('pt-BR', {
-        day: '2-digit', month: 'short', hour: '2-digit', minute: '2-digit',
-      });
-      item.append(sender, content, time);
+      time.textContent = date.toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit' });
+      item.append(content, time);
       feed.append(item);
     }
+    if (wasAtBottom) feed.scrollTop = feed.scrollHeight;
   };
 
   const loadPhotos = async () => {
+    if (!isMomentsPage) return;
     const gallery = document.querySelector('.photo-grid');
-    if (!gallery) return;
     const { data, error } = await client
       .from('couple_photos')
       .select('id,object_path,caption,sender_id,created_at')
@@ -133,19 +147,50 @@ function startCoupleSpace() {
       imageElement.alt = photo.caption || 'Lembrança compartilhada do casal';
       placeholder.append(imageElement);
       const caption = document.createElement('div');
-      caption.className = 'memory-caption';
+      caption.className = 'memory-caption shared-memory-caption';
       const title = document.createElement('strong');
       title.textContent = photo.caption || 'um momento nosso';
       const subtitle = document.createElement('span');
       subtitle.textContent = photo.sender_id === currentUser.id ? 'adicionado por você' : 'adicionado pelo seu amor';
       caption.append(title, subtitle);
+      if (photo.sender_id === currentUser.id) {
+        const deleteButton = document.createElement('button');
+        deleteButton.className = 'couple-delete-photo';
+        deleteButton.type = 'button';
+        deleteButton.textContent = 'remover foto';
+        deleteButton.setAttribute('aria-label', `Remover a foto ${title.textContent}`);
+        deleteButton.addEventListener('click', () => { void deletePhoto(photo, deleteButton); });
+        caption.append(deleteButton);
+      }
       card.append(placeholder, caption);
       gallery.append(card);
     }
   };
 
-  const refreshSharedContent = async () => {
-    await Promise.all([loadMessages(), loadPhotos()]);
+  const deletePhoto = async (photo, button) => {
+    if (!window.confirm('Remover esta foto compartilhada? Essa ação não pode ser desfeita.')) return;
+    button.disabled = true;
+    showStatus('removendo a foto...');
+    const { error: storageError } = await client.storage
+      .from('couple-moments')
+      .remove([photo.object_path]);
+    if (storageError) {
+      button.disabled = false;
+      showStatus(`não consegui remover o arquivo da foto: ${storageError.message}`, 'error');
+      return;
+    }
+    const { error: recordError } = await client
+      .from('couple_photos')
+      .delete()
+      .eq('id', photo.id)
+      .eq('sender_id', currentUser.id);
+    if (recordError) {
+      button.disabled = false;
+      showStatus(`o arquivo foi removido, mas o registro da foto não: ${recordError.message}. Atualize o álbum e, se continuar, peça para corrigir o registro no Supabase.`, 'error');
+      return;
+    }
+    showStatus('foto removida dos momentos.');
+    await loadPhotos();
   };
 
   const activateMember = async () => {
@@ -155,18 +200,18 @@ function startCoupleSpace() {
       return;
     }
     if (!data) {
-      showStatus('sua conta está criada, mas ainda não foi liberada para o cantinho privado. Siga a etapa de liberar as duas contas no guia do Supabase.', 'error');
+      showStatus('sua conta ainda não foi liberada para o cantinho privado.', 'error');
       return;
     }
-
-    privateRegion.hidden = false;
-    root.querySelector('[data-account]').textContent = `conectado como ${currentUser.email}`;
-    showStatus('cantinho conectado — recados e novas fotos sincronizam entre vocês.');
-    await refreshSharedContent();
+    if (privateRegion) privateRegion.hidden = false;
+    if (presence) presence.textContent = 'conversa privada';
+    showStatus(isChatPage ? 'conversa conectada em tempo real.' : 'álbum privado — envie e remova suas fotos.');
+    if (isChatPage) await loadMessages();
+    if (isMomentsPage) await loadPhotos();
     realtimeChannel = client
       .channel('couple-private-updates')
-      .on('postgres_changes', { event: '*', schema: 'public', table: 'couple_messages' }, loadMessages)
-      .on('postgres_changes', { event: '*', schema: 'public', table: 'couple_photos' }, loadPhotos)
+      .on('postgres_changes', { event: '*', schema: 'public', table: 'couple_messages' }, () => { void loadMessages(); })
+      .on('postgres_changes', { event: '*', schema: 'public', table: 'couple_photos' }, () => { void loadPhotos(); })
       .subscribe((channelStatus) => {
         if (channelStatus === 'CHANNEL_ERROR' || channelStatus === 'TIMED_OUT') {
           showStatus('a conexão em tempo real caiu. Confira a rede e recarregue a página.', 'error');
@@ -183,47 +228,48 @@ function startCoupleSpace() {
         realtimeChannel = null;
       }
       currentUser = session?.user || null;
-      if (!currentUser) {
-        return;
-      }
-      privateRegion.hidden = true;
+      if (!currentUser) return;
       await activateMember();
     } finally {
       handlingSession = false;
     }
   };
 
-  root.querySelector('[data-message-form]').addEventListener('submit', async (event) => {
-    event.preventDefault();
-    const input = event.currentTarget.elements.message;
-    const message = input.value.trim();
-    if (!message || !currentUser) return;
-    const { error } = await client.from('couple_messages').insert({
-      sender_id: currentUser.id,
-      message,
+  const messageForm = root.querySelector('[data-message-form]');
+  if (messageForm) {
+    const messageInput = messageForm.elements.message;
+    messageInput.addEventListener('input', () => {
+      messageInput.style.height = 'auto';
+      messageInput.style.height = `${Math.min(messageInput.scrollHeight, 120)}px`;
     });
-    if (error) {
-      showStatus(`não consegui enviar o recadinho: ${error.message}`, 'error');
-      return;
-    }
-    input.value = '';
-    showStatus('recadinho enviado para o celular do seu amor ♥');
-    await loadMessages();
-  });
-
-  root.querySelector('[data-send-heart]').addEventListener('click', async () => {
-    if (!currentUser) return;
-    const { error } = await client.from('couple_messages').insert({
-      sender_id: currentUser.id,
-      message: 'estou pensando em você! ♥',
+    messageInput.addEventListener('keydown', (event) => {
+      if (event.key === 'Enter' && !event.shiftKey) {
+        event.preventDefault();
+        messageForm.requestSubmit();
+      }
     });
-    if (error) {
-      showStatus(`não consegui mandar o coração: ${error.message}`, 'error');
-      return;
-    }
-    showStatus('coração enviado para o outro celular ♥');
-    await loadMessages();
-  });
+    messageForm.addEventListener('submit', async (event) => {
+      event.preventDefault();
+      const message = messageInput.value.trim();
+      if (!message || !currentUser) return;
+      const sendButton = messageForm.querySelector('button[type="submit"]');
+      sendButton.disabled = true;
+      const { error } = await client.from('couple_messages').insert({
+        sender_id: currentUser.id,
+        message,
+      });
+      sendButton.disabled = false;
+      if (error) {
+        showStatus(`não consegui enviar a mensagem: ${error.message}`, 'error');
+        return;
+      }
+      messageInput.value = '';
+      messageInput.style.height = 'auto';
+      showStatus('mensagem enviada ♥');
+      await loadMessages();
+      messageInput.focus();
+    });
+  }
 
   const photoForm = root.querySelector('[data-photo-form]');
   if (photoForm) {
@@ -242,11 +288,14 @@ function startCoupleSpace() {
       }
       const extension = { 'image/jpeg': 'jpg', 'image/png': 'png', 'image/webp': 'webp' }[file.type];
       const objectPath = `${currentUser.id}/${crypto.randomUUID()}.${extension}`;
+      const uploadButton = photoForm.querySelector('button[type="submit"]');
+      uploadButton.disabled = true;
       showStatus('enviando a lembrança privada...');
       const { error: uploadError } = await client.storage
         .from('couple-moments')
         .upload(objectPath, file, { contentType: file.type, upsert: false });
       if (uploadError) {
+        uploadButton.disabled = false;
         showStatus(`não consegui enviar a foto: ${uploadError.message}`, 'error');
         return;
       }
@@ -257,12 +306,14 @@ function startCoupleSpace() {
       });
       if (recordError) {
         const { error: cleanupError } = await client.storage.from('couple-moments').remove([objectPath]);
-        const cleanupNote = cleanupError ? ' A imagem foi enviada, mas precisa de limpeza no armazenamento.' : '';
+        const cleanupNote = cleanupError ? ` O arquivo também não pôde ser limpo: ${cleanupError.message}` : '';
+        uploadButton.disabled = false;
         showStatus(`não consegui adicionar a foto ao álbum: ${recordError.message}.${cleanupNote}`, 'error');
         return;
       }
       photoForm.reset();
-      showStatus('foto adicionada aos momentos — ela já pode ver no celular dela! ✦');
+      uploadButton.disabled = false;
+      showStatus('foto adicionada aos momentos ✦');
       await loadPhotos();
     });
   }

@@ -27,7 +27,7 @@ await build({
   outfile: 'www/assets/js/site-auth.js',
 });
 
-for (const page of ['www/index.html', ...['carta', 'chuva', 'historia', 'login', 'momentos', 'playlist', 'teste-relogio'].map((name) => `www/pages/${name}.html`)]) {
+for (const page of ['www/index.html', ...['carta', 'chuva', 'conversa', 'historia', 'login', 'momentos', 'playlist', 'teste-relogio'].map((name) => `www/pages/${name}.html`)]) {
   const html = await readFile(page, 'utf8');
   const assetPrefix = page.includes('/pages/') ? '../assets/' : 'assets/';
   const scripts = `<script src="${assetPrefix}js/native-notifications.js"></script>`;

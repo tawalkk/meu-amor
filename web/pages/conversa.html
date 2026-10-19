@@ -1,0 +1,35 @@
+<!doctype html>
+<html lang="pt-BR">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <script>document.documentElement.classList.add('auth-pending')</script>
+    <meta name="theme-color" content="#df5b91" />
+    <meta name="description" content="Uma conversa privada, só nossa." />
+    <link rel="manifest" href="../manifest.webmanifest" />
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link href="https://fonts.googleapis.com/css2?family=Baloo+2:wght@400;500;600;700;800&family=DM+Sans:wght@400;500;600;700&display=swap" rel="stylesheet" />
+    <link rel="stylesheet" href="../assets/css/styles.css" />
+    <link rel="stylesheet" href="../assets/css/modern.css" />
+    <link rel="stylesheet" href="../assets/css/couple.css" />
+    <link rel="stylesheet" href="../assets/css/auth.css" />
+    <link rel="stylesheet" href="../assets/css/chat.css" />
+    <title>Nossa conversa | mês.dois</title>
+  </head>
+  <body class="chat-page">
+    <header class="topbar">
+      <a class="brand" href="../index.html" aria-label="Voltar ao início"><span class="brand-bow">🎀</span><span>mês<span class="brand-dot">.</span>dois</span></a>
+      <nav class="nav-links" aria-label="Navegação principal">
+        <a href="momentos.html">momentos</a>
+        <a href="conversa.html" aria-current="page">conversa</a>
+      </nav>
+    </header>
+    <main class="chat-layout">
+      <div id="couple-chat" data-couple-view="chat" aria-label="Conversa privada do casal"></div>
+    </main>
+    <script src="../assets/js/couple-config.js"></script>
+    <script src="../assets/js/couple-interactions.js"></script>
+    <script src="../assets/js/site-auth.js"></script>
+  </body>
+</html>
