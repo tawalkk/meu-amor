@@ -49,7 +49,14 @@ function setupLoginPage(client) {
     try {
       const { error } = await client.auth.signInWithPassword({ email, password });
       if (error) {
-        showLoginMessage('usuário ou senha incorretos. Confira os dados e tente novamente.', true);
+        const message = error.message.toLowerCase();
+        if (message.includes('invalid login credentials')) {
+          showLoginMessage('usuário ou senha não conferem. Confira se a conta existe no Supabase e use a senha definida para ela.', true);
+        } else if (message.includes('email not confirmed')) {
+          showLoginMessage('esta conta ainda não foi confirmada. Marque o e-mail como confirmado em Authentication → Users no Supabase.', true);
+        } else {
+          showLoginMessage(`falha ao entrar (${error.status ?? 'sem status'}): ${error.message}`, true);
+        }
         return;
       }
       redirectAfterLogin();

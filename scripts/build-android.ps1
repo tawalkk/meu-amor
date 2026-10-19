@@ -18,6 +18,9 @@ try {
     & .\gradlew.bat assembleDebug
     if ($LASTEXITCODE -ne 0) { throw 'A compilação do APK falhou.' }
   } finally { Pop-Location }
-  Copy-Item -LiteralPath (Join-Path $projectRoot 'android\app\build\outputs\apk\debug\app-debug.apk') -Destination (Join-Path $projectRoot 'Nosso-amor.apk') -Force
-  Write-Output "APK criado em: $(Join-Path $projectRoot 'Nosso-amor.apk')"
+  $releaseDirectory = Join-Path $projectRoot 'releases'
+  New-Item -ItemType Directory -Force -Path $releaseDirectory | Out-Null
+  $apkPath = Join-Path $releaseDirectory 'Nosso-amor.apk'
+  Copy-Item -LiteralPath (Join-Path $projectRoot 'android\app\build\outputs\apk\debug\app-debug.apk') -Destination $apkPath -Force
+  Write-Output "APK criado em: $apkPath"
 } finally { Pop-Location }

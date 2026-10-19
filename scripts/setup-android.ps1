@@ -34,4 +34,4 @@ if ($LASTEXITCODE -ne 0) { throw 'Não foi possível instalar os pacotes do Andr
 
 npm run android:apk
 if ($LASTEXITCODE -ne 0) { throw 'A compilação do APK falhou; consulte a saída acima.' }
-Write-Output "APK criado em: $(Join-Path $PSScriptRoot '..\android\app\build\outputs\apk\debug\app-debug.apk')"
+Write-Output "APK criado em: $(Join-Path $PSScriptRoot '..\releases\Nosso-amor.apk')"

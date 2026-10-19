@@ -1,10 +1,11 @@
 import { cp, mkdir, readFile, rm, writeFile } from 'node:fs/promises';
 import { build } from 'esbuild';
 
+const webSource = 'web';
 const files = ['index.html', 'manifest.webmanifest', 'service-worker.js', 'assets', 'pages'];
 await rm('www', { recursive: true, force: true });
 await mkdir('www', { recursive: true });
-for (const file of files) await cp(file, `www/${file}`, { recursive: true });
+for (const file of files) await cp(`${webSource}/${file}`, `www/${file}`, { recursive: true });
 await build({
   entryPoints: ['scripts/native-notifications.mjs'],
   bundle: true,
@@ -16,17 +17,15 @@ await build({
   bundle: true,
   format: 'iife',
   minify: true,
-  outfile: 'assets/js/couple-interactions.js',
+  outfile: 'www/assets/js/couple-interactions.js',
 });
-await cp('assets/js/couple-interactions.js', 'www/assets/js/couple-interactions.js');
 await build({
   entryPoints: ['scripts/site-auth.mjs'],
   bundle: true,
   format: 'iife',
   minify: true,
-  outfile: 'assets/js/site-auth.js',
+  outfile: 'www/assets/js/site-auth.js',
 });
-await cp('assets/js/site-auth.js', 'www/assets/js/site-auth.js');
 
 for (const page of ['www/index.html', ...['carta', 'chuva', 'historia', 'login', 'momentos', 'playlist', 'teste-relogio'].map((name) => `www/pages/${name}.html`)]) {
   const html = await readFile(page, 'utf8');
