@@ -26,11 +26,18 @@ await build({
   minify: true,
   outfile: 'www/assets/js/site-auth.js',
 });
+await build({
+  entryPoints: ['scripts/shared-features.mjs'],
+  bundle: true,
+  format: 'iife',
+  minify: true,
+  outfile: 'www/assets/js/shared-features.js',
+});
 
-for (const page of ['www/index.html', ...['carta', 'chuva', 'conversa', 'historia', 'login', 'momentos', 'playlist', 'teste-relogio'].map((name) => `www/pages/${name}.html`)]) {
+for (const page of ['www/index.html', ...['carta', 'chuva', 'conversa', 'historia', 'login', 'momentos', 'playlist', 'teste-relogio', 'espaco', 'linha-do-tempo', 'cartinhas', 'diario', 'planos', 'desejos', 'recadinhos', 'perguntas', 'calendario'].map((name) => `www/pages/${name}.html`)]) {
   const html = (await readFile(page, 'utf8'))
-    .replaceAll('site-auth.js"', 'site-auth.js?v=20"')
-    .replace(/script\.js(?:\?v=\d+)?"/g, 'script.js?v=20"')
+    .replaceAll('site-auth.js"', 'site-auth.js?v=21"')
+    .replace(/script\.js(?:\?v=\d+)?"/g, 'script.js?v=21"')
     .replace(/\s*<link rel="(?:icon|apple-touch-icon)"[^>]*>/g, '');
   const assetPrefix = page.includes('/pages/') ? '../assets/' : 'assets/';
   const icons = `    <link rel="icon" type="image/png" href="${assetPrefix}images/icon_appandsite.png" />\n    <link rel="apple-touch-icon" href="${assetPrefix}images/icon_appandsite.png" />\n`;

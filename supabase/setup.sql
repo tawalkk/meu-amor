@@ -228,3 +228,136 @@ begin
     alter publication supabase_realtime add table public.couple_photos;
   end if;
 end $$;
+
+-- Shared features for the private couple area.
+create table if not exists public.couple_timeline (
+  id uuid primary key default gen_random_uuid(),
+  created_by uuid not null references auth.users(id) on delete cascade,
+  title text not null check (char_length(title) between 1 and 100),
+  details text not null default '' check (char_length(details) <= 800),
+  happened_on date not null default current_date,
+  created_at timestamptz not null default now()
+);
+
+create table if not exists public.couple_letters (
+  id uuid primary key default gen_random_uuid(),
+  created_by uuid not null references auth.users(id) on delete cascade,
+  title text not null check (char_length(title) between 1 and 100),
+  content text not null check (char_length(content) between 1 and 3000),
+  created_at timestamptz not null default now()
+);
+
+create table if not exists public.couple_diary (
+  id uuid primary key default gen_random_uuid(),
+  created_by uuid not null references auth.users(id) on delete cascade,
+  title text not null default '' check (char_length(title) <= 100),
+  content text not null check (char_length(content) between 1 and 2000),
+  entry_on date not null default current_date,
+  created_at timestamptz not null default now()
+);
+
+create table if not exists public.couple_plans (
+  id uuid primary key default gen_random_uuid(),
+  created_by uuid not null references auth.users(id) on delete cascade,
+  title text not null check (char_length(title) between 1 and 100),
+  details text not null default '' check (char_length(details) <= 800),
+  planned_for date,
+  is_done boolean not null default false,
+  created_at timestamptz not null default now()
+);
+
+create table if not exists public.couple_wishes (
+  id uuid primary key default gen_random_uuid(),
+  created_by uuid not null references auth.users(id) on delete cascade,
+  title text not null check (char_length(title) between 1 and 120),
+  category text not null default 'outro' check (category in ('passeio', 'comida', 'filme ou série', 'viagem', 'outro')),
+  is_done boolean not null default false,
+  created_at timestamptz not null default now()
+);
+
+create table if not exists public.couple_notes (
+  id uuid primary key default gen_random_uuid(),
+  created_by uuid not null references auth.users(id) on delete cascade,
+  title text not null check (char_length(title) between 1 and 140),
+  content text not null default '' check (char_length(content) <= 500),
+  created_at timestamptz not null default now()
+);
+
+create table if not exists public.couple_questions (
+  id uuid primary key default gen_random_uuid(),
+  created_by uuid not null references auth.users(id) on delete cascade,
+  question text not null check (char_length(question) between 1 and 240),
+  created_at timestamptz not null default now()
+);
+
+create table if not exists public.couple_answers (
+  id uuid primary key default gen_random_uuid(),
+  question_id uuid not null references public.couple_questions(id) on delete cascade,
+  responder_id uuid not null references auth.users(id) on delete cascade,
+  answer text not null check (char_length(answer) between 1 and 500),
+  updated_at timestamptz not null default now(),
+  unique (question_id, responder_id)
+);
+
+create table if not exists public.couple_events (
+  id uuid primary key default gen_random_uuid(),
+  created_by uuid not null references auth.users(id) on delete cascade,
+  title text not null check (char_length(title) between 1 and 100),
+  details text not null default '' check (char_length(details) <= 800),
+  starts_at timestamptz not null,
+  created_at timestamptz not null default now()
+);
+
+do $$
+declare
+  table_name text;
+begin
+  foreach table_name in array array[
+    'couple_timeline', 'couple_letters', 'couple_diary', 'couple_plans',
+    'couple_wishes', 'couple_notes', 'couple_questions', 'couple_events'
+  ] loop
+    execute format('alter table public.%I enable row level security', table_name);
+    execute format('grant select, insert, update, delete on public.%I to authenticated', table_name);
+    execute format('drop policy if exists "couple feature members can read" on public.%I', table_name);
+    execute format('create policy "couple feature members can read" on public.%I for select to authenticated using (public.is_couple_member())', table_name);
+    execute format('drop policy if exists "couple feature members can add own" on public.%I', table_name);
+    execute format('create policy "couple feature members can add own" on public.%I for insert to authenticated with check (public.is_couple_member() and created_by = (select auth.uid()))', table_name);
+    execute format('drop policy if exists "couple feature members can update" on public.%I', table_name);
+    execute format('create policy "couple feature members can update" on public.%I for update to authenticated using (public.is_couple_member()) with check (public.is_couple_member())', table_name);
+    execute format('drop policy if exists "authors can remove their own feature entries" on public.%I', table_name);
+    execute format('create policy "authors can remove their own feature entries" on public.%I for delete to authenticated using (public.is_couple_member() and created_by = (select auth.uid()))', table_name);
+  end loop;
+end $$;
+
+alter table public.couple_answers enable row level security;
+grant select, insert, update, delete on public.couple_answers to authenticated;
+drop policy if exists "couple members can read answers" on public.couple_answers;
+create policy "couple members can read answers" on public.couple_answers
+  for select to authenticated using (public.is_couple_member());
+drop policy if exists "members can answer as themselves" on public.couple_answers;
+create policy "members can answer as themselves" on public.couple_answers
+  for insert to authenticated with check (public.is_couple_member() and responder_id = (select auth.uid()));
+drop policy if exists "members can update their own answers" on public.couple_answers;
+create policy "members can update their own answers" on public.couple_answers
+  for update to authenticated using (public.is_couple_member() and responder_id = (select auth.uid()))
+  with check (public.is_couple_member() and responder_id = (select auth.uid()));
+drop policy if exists "members can remove their own answers" on public.couple_answers;
+create policy "members can remove their own answers" on public.couple_answers
+  for delete to authenticated using (public.is_couple_member() and responder_id = (select auth.uid()));
+
+do $$
+declare
+  table_name text;
+begin
+  foreach table_name in array array[
+    'couple_timeline', 'couple_letters', 'couple_diary', 'couple_plans',
+    'couple_wishes', 'couple_notes', 'couple_questions', 'couple_answers', 'couple_events'
+  ] loop
+    if not exists (
+      select 1 from pg_publication_tables
+      where pubname = 'supabase_realtime' and schemaname = 'public' and tablename = table_name
+    ) then
+      execute format('alter publication supabase_realtime add table public.%I', table_name);
+    end if;
+  end loop;
+end $$;
