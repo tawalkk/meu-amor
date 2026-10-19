@@ -29,7 +29,7 @@ function startCoupleSpace() {
           </div>
           <a class="chat-gallery-link" href="momentos.html" aria-label="Abrir nossos momentos">✦</a>
         </header>
-        <div class="chat-status-wrap"></div>
+        <div class="couple-status-wrap"></div>
         <ol class="chat-feed" data-feed aria-live="polite" aria-label="Mensagens da conversa"></ol>
         <form class="chat-composer" data-message-form>
           <label class="visually-hidden" for="chat-message">Escreva uma mensagem</label>
