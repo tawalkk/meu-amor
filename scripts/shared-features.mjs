@@ -65,10 +65,13 @@ async function initialize() {
   const client = createClient(config.url, config.anonKey);
   const featureName = root.dataset.sharedFeature;
   if (featureName === 'portal') return renderPortal();
-  const status = element('p', 'shared-status', 'conferindo o acesso ao nosso cantinho...');
+  const status = root.querySelector('.shared-status') || element('p', 'shared-status');
   status.setAttribute('role', 'status');
   status.setAttribute('aria-live', 'polite');
-  root.append(status);
+  if (!status.isConnected) {
+    status.textContent = 'conferindo o acesso ao nosso cantinho...';
+    root.append(status);
+  }
 
   const { data: sessionResult, error: sessionError } = await client.auth.getSession();
   if (sessionError || !sessionResult.session) {
