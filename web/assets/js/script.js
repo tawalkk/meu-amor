@@ -296,7 +296,7 @@ function updateRelationshipTitle() {
   if (!relationshipTitleElement) return;
 
   const { years, months, days } = getElapsedYearsMonthsDays();
-  const totalMonths = Math.max(1, years * 12 + months + 1);
+  const totalMonths = Math.max(1, years * 12 + months);
   const monthNames = ['primeiro', 'segundo', 'terceiro', 'quarto', 'quinto', 'sexto', 'sétimo', 'oitavo', 'nono', 'décimo', 'décimo primeiro', 'décimo segundo'];
   const monthLabel = monthNames[totalMonths - 1] || `${totalMonths}º`;
   relationshipTitleElement.innerHTML = `Nosso ${monthLabel}<br /><em>mês</em> juntinho.`;
