@@ -18,10 +18,6 @@
     <link rel="stylesheet" href="assets/css/auth.css" />
     <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'%3E%3Crect width='64' height='64' rx='16' fill='%23fff0f6'/%3E%3Cpath d='M32 49S10 36 10 21c0-8 11-12 17-3 5-9 27-5 27 3 0 15-22 28-22 28Z' fill='%23f45d9b'/%3E%3C/svg%3E" />
     <style>
-      .home-links{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:18px;padding:18px 0 105px}
-      .home-links a{position:relative;display:flex;flex-direction:column;gap:5px;padding:23px 25px;background:#fff;border:1px solid var(--border);text-decoration:none;color:var(--ink);transition:transform .2s,box-shadow .2s}
-      .home-links a:hover{transform:translateY(-4px);box-shadow:0 12px 25px #b9799e1c}
-      .home-links a>span{color:var(--pink);font-size:22px}.home-links strong{font:700 21px 'Baloo 2',sans-serif}.home-links small{color:var(--muted);font-size:11px}.home-links b{position:absolute;right:20px;bottom:18px;color:var(--pink);font-size:19px}
       .counter{display:flex;flex-direction:column;align-items:flex-start;justify-content:center;gap:5px}.counter-main{display:flex;align-items:baseline;gap:10px}.counter-extra{font-size:11px;line-height:1.1;color:var(--muted);opacity:.85;letter-spacing:.2px}
       .hero-copy{position:relative;z-index:2}
       .hero-actions{display:flex;align-items:center;flex-wrap:wrap;gap:10px}
@@ -46,7 +42,6 @@
       @keyframes twinkle{0%,100%{transform:scale(.9) rotate(0deg);opacity:.6}50%{transform:scale(1.2) rotate(12deg);opacity:1}}
       .art-caption{right:64px;bottom:-10px}
       @media(max-width:800px){
-        .home-links{grid-template-columns:1fr;padding-bottom:70px}
         .hero-art{min-height:320px}
         .hero-copy{z-index:2}
         .hero-art .kitty-character{left:0;top:20px;width:auto;height:auto}
