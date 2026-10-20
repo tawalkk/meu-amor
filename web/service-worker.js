@@ -1,4 +1,4 @@
-const CACHE_NAME = 'nosso-amor-v27';
+const CACHE_NAME = 'nosso-amor-v28';
 const APP_FILES = [
   './', './index.html', './manifest.webmanifest',
   './assets/css/styles.css', './assets/css/modern.css', './assets/css/social.css', './assets/css/couple.css', './assets/css/auth.css', './assets/css/chat.css', './assets/css/shared-features.css',
@@ -34,8 +34,10 @@ self.addEventListener('fetch', (event) => {
 
 self.addEventListener('notificationclick', (event) => {
   event.notification.close();
+  const targetUrl = event.notification.data?.url || new URL('./pages/conversa.html', self.location.href).href;
   event.waitUntil(self.clients.matchAll({ type: 'window', includeUncontrolled: true }).then((clients) => {
     const appWindow = clients.find((client) => new URL(client.url).origin === self.location.origin);
-    return appWindow ? appWindow.focus() : self.clients.openWindow('./index.html');
+    if (!appWindow) return self.clients.openWindow(targetUrl);
+    return appWindow.navigate(targetUrl).then((client) => (client || appWindow).focus());
   }));
 });

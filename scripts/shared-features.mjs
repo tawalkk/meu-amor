@@ -325,8 +325,16 @@ function renderQuestion(question, answers, user, client, status, reload) {
   const answerList = element('div', 'answer-list');
   if (mine) answerList.append(answerItem('sua resposta', mine.answer));
   const theirs = answers.find((answer) => answer.responder_id !== user.id);
-  if (theirs && mine) answerList.append(answerItem('resposta do seu amor', theirs.answer));
-  if (answerList.childElementCount) card.append(answerList);
+  if (theirs) answerList.append(answerItem('resposta do seu amor', theirs.answer));
+  if (!mine || !theirs) {
+    const progress = !mine && theirs
+      ? 'seu amor já respondeu; falta a sua resposta.'
+      : mine && !theirs
+        ? 'sua resposta está guardada; seu amor ainda não respondeu.'
+        : 'esta pergunta ainda está esperando as respostas de vocês.';
+    answerList.append(element('p', 'answer-progress', progress));
+  }
+  card.append(answerList);
   if (question.created_by === user.id) {
     const remove = element('button', 'shared-action', 'remover pergunta');
     remove.type = 'button';
