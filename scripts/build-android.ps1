@@ -20,7 +20,7 @@ try {
   } finally { Pop-Location }
   $releaseDirectory = Join-Path $projectRoot 'releases'
   New-Item -ItemType Directory -Force -Path $releaseDirectory | Out-Null
-  $apkPath = Join-Path $releaseDirectory 'Nosso-amor.apk'
+  $apkPath = Join-Path $releaseDirectory 'Nosso-amor-teste.apk'
   $builtApkPath = Join-Path $projectRoot 'android\app\build\outputs\apk\debug\app-debug.apk'
   Copy-Item -LiteralPath $builtApkPath -Destination $apkPath -Force
   $downloadDirectories = @(
@@ -29,7 +29,7 @@ try {
   )
   foreach ($directory in $downloadDirectories) {
     New-Item -ItemType Directory -Force -Path $directory | Out-Null
-    Copy-Item -LiteralPath $builtApkPath -Destination (Join-Path $directory 'Nosso-amor.apk') -Force
+    Copy-Item -LiteralPath $builtApkPath -Destination (Join-Path $directory 'Nosso-amor-teste.apk') -Force
   }
   Write-Output "APK criado em: $apkPath"
 } finally { Pop-Location }

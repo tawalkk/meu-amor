@@ -24,6 +24,11 @@
       .download-app-button{display:inline-flex;align-items:center;gap:10px;min-height:52px;padding:14px 18px;border:1px solid #f3cedd;border-radius:999px;background:#fff;color:var(--pink);font-size:11px;font-weight:700;text-decoration:none;text-transform:uppercase;letter-spacing:.7px;transition:transform .2s,box-shadow .2s}
       .download-app-button:hover{transform:translateY(-2px);box-shadow:0 8px 18px #b9799e22}
       .download-app-button span{font-size:18px}
+      .download-test-button{display:inline-flex;align-items:center;gap:9px;min-height:52px;padding:13px 17px;border:1px dashed #dca6bc;border-radius:999px;background:rgba(255,255,255,.64);color:#95657b;font-size:10px;font-weight:700;text-decoration:none;text-transform:uppercase;letter-spacing:.55px;transition:transform .2s,border-color .2s,background .2s}
+      .download-test-button:hover{transform:translateY(-2px);border-color:var(--pink);background:#fff7fa}
+      .download-test-button span{font-size:16px;color:var(--pink)}
+      body.night-mode .download-test-button{border-color:#83546e;background:#342536;color:#ffd9e8}
+      body.night-mode .download-test-button:hover{border-color:#df76a2;background:#422c41}
       .hero-art{position:relative;z-index:1;overflow:visible;min-height:420px}
       .hero-art .character{position:absolute;display:flex;align-items:flex-end;justify-content:center;z-index:1}
       .hero-art .character img{display:block;max-width:100%;height:auto;filter:drop-shadow(0 14px 20px rgba(168,92,126,.16));}
@@ -86,6 +91,7 @@
           <div class="hero-actions">
             <a class="primary-button" href="pages/carta.html">abrir minha cartinha <span>↗</span></a>
             <a class="download-app-button" href="downloads/Nosso-amor.apk" download="Nosso-amor.apk">baixar app Android <span aria-hidden="true">↓</span></a>
+            <a class="download-test-button" href="downloads/Nosso-amor-teste.apk" download="Nosso-amor-teste.apk">APK de teste 1.5 <span aria-hidden="true">↗</span></a>
             <button class="install-app-button" id="install-app" type="button" hidden>instalar nosso app <span>↓</span></button>
           </div>
           <div class="hero-note"><span class="note-line"></span><span>feito com carinho para você</span></div>
