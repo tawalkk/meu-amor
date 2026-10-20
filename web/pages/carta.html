@@ -12,10 +12,11 @@
     <link rel="stylesheet" href="../assets/css/modern.css" />
     <link rel="stylesheet" href="../assets/css/social.css" />
     <link rel="stylesheet" href="../assets/css/auth.css" />
+    <link rel="stylesheet" href="../assets/css/letter.css" />
     <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'%3E%3Crect width='64' height='64' rx='16' fill='%23fff0f6'/%3E%3Cpath d='M32 49S10 36 10 21c0-8 11-12 17-3 5-9 27-5 27 3 0 15-22 28-22 28Z' fill='%23f45d9b'/%3E%3C/svg%3E" />
     <style>
-      .page-main{padding:78px 0 20px;min-height:calc(100vh - 157px)}
-      .page-main .letter{margin-bottom:0}
+      .page-main{padding:62px 0 35px;min-height:calc(100vh - 157px)}
+      .page-main .letter-scene{margin-bottom:0}
       .page-intro{width:min(1120px,calc(100% - 64px));margin:0 auto 25px}
       .page-intro a{color:var(--pink);font-size:11px;text-decoration:none;text-transform:uppercase;letter-spacing:1.5px}
       @media(max-width:800px){.page-intro{width:calc(100% - 38px)}}
@@ -37,19 +38,20 @@
     <main class="page-main">
       <div class="page-intro"><a href="../index.html">← voltar para o início</a></div>
 
-      <section class="letter section-wrap">
-        <div class="letter-decor letter-left">♡</div>
-        <div class="letter-decor letter-right">✦</div>
-        <div class="letter-top"><span>para Lavínia,</span><span>com todo meu amor ♥</span></div>
+      <section class="letter-scene section-wrap" aria-label="Uma carta de amor">
+        <div class="letter-envelope" aria-hidden="true"><span>♥</span></div>
+        <article class="letter" aria-labelledby="letter-title">
+          <div class="letter-top"><span>mês.dois <i>·</i> correspondência do coração</span><span class="letter-stamp" aria-hidden="true">♥<small>com amor</small></span></div>
+          <div class="letter-address"><span>para</span><strong>Lavínia</strong><span class="letter-address-heart">♡</span></div>
 
-        <div class="letter-content">
-          <h2>Lavínia, você é meu<br /><em>presente favorito.</em></h2>
-          <p>Nosso segundo mês chegou cheio de histórias, abraços demorados e planos bobos — e ainda temos tantos capítulos bonitos para viver.</p>
-          <p>Eu escolheria você em todos os universos, em todas as versões da nossa história. Feliz segundo mês, meu amor!</p>
-          <div class="letter-signature">te amo mais que<br /><strong>todas as estrelinhas ✦</strong></div>
-        </div>
-
-        <button class="surprise-button" id="surprise-button" type="button"><span>✦</span> clique para um carinho extra</button>
+          <div class="letter-content">
+            <h2 id="letter-title">Meu amor,</h2>
+            <p>Nosso segundo mês chegou cheio de histórias, abraços demorados e planos bobos — e ainda temos tantos capítulos bonitos para viver.</p>
+            <p>Eu escolheria você em todos os universos, em todas as versões da nossa história. Feliz segundo mês, meu amor!</p>
+            <div class="letter-signature">Com todo o meu amor,<strong>seu Kaique <span>♥</span></strong></div>
+          </div>
+        </article>
+        <button class="surprise-button" id="surprise-button" type="button"><span>✦</span> abrir um carinho extra</button>
       </section>
     </main>
 
