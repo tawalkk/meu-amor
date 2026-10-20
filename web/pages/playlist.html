@@ -13,6 +13,7 @@
     <link rel="stylesheet" href="../assets/css/modern.css" />
     <link rel="stylesheet" href="../assets/css/social.css" />
     <link rel="stylesheet" href="../assets/css/auth.css" />
+    <link rel="stylesheet" href="../assets/css/special-pages.css" />
     <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'%3E%3Crect width='64' height='64' rx='16' fill='%23fff0f6'/%3E%3Cpath d='M32 49S10 36 10 21c0-8 11-12 17-3 5-9 27-5 27 3 0 15-22 28-22 28Z' fill='%23f45d9b'/%3E%3C/svg%3E" />
     <style>
       .page-main {
@@ -112,17 +113,24 @@
       </nav>
     </header>
 
-    <main class="page-main">
+    <main class="page-main" id="shared-feature" data-shared-feature="playlist">
       <div class="page-intro">
         <a href="../index.html">← voltar para o início</a>
       </div>
 
-      <section class="section-wrap">
+      <section class="section-wrap playlist-page">
         <div class="playlist-shell">
           <div class="playlist-header">
             <p class="eyebrow"><span>♫</span> a trilha do nosso amor</p>
             <h2>nossa <em>playlist</em></h2>
+            <p class="playlist-lede">Músicas que guardam um pedacinho da nossa história.</p>
           </div>
+
+          <section class="playlist-week" data-playlist-featured aria-live="polite">
+            <p class="eyebrow">♫ a música da nossa semana</p>
+            <h3>Uma música está esperando por vocês</h3>
+            <p>Sugiram uma faixa e contem por que ela combina com a história de vocês.</p>
+          </section>
 
           <div class="playlist-frame-wrap">
             <iframe
@@ -138,9 +146,23 @@
             ></iframe>
           </div>
 
-          <p class="playlist-note">
-            Uma playlist só nossa, com músicas que parecem feitas pra nos acompanhar nos melhores momentos e também nos mais fofos.
-          </p>
+          <p class="playlist-note">A playlist oficial de vocês continua aqui. Abaixo, guardem também as músicas que querem dedicar um ao outro.</p>
+
+          <section class="playlist-dedications" aria-labelledby="playlist-dedications-title">
+            <div class="playlist-section-heading">
+              <p class="eyebrow">um recado em forma de música</p>
+              <h3 id="playlist-dedications-title">músicas para <em>dedicar</em></h3>
+            </div>
+            <form class="playlist-suggestion-form" data-playlist-form>
+              <label>nome da música<input name="title" maxlength="120" required placeholder="qual faixa não sai da cabeça?" /></label>
+              <label>artista<input name="artist" maxlength="120" placeholder="quem canta?" /></label>
+              <label class="playlist-form-wide">link da faixa no Spotify <span>(opcional)</span><input name="spotify_url" type="url" maxlength="500" placeholder="https://open.spotify.com/track/..." /></label>
+              <label class="playlist-form-wide">por que ela lembra vocês?<textarea name="dedication" rows="3" maxlength="800" placeholder="uma lembrança, um sentimento ou um recadinho... "></textarea></label>
+              <button class="shared-submit playlist-submit" type="submit">guardar essa música ♡</button>
+            </form>
+            <p class="shared-status playlist-status" role="status" aria-live="polite">carregando as músicas de vocês...</p>
+            <div class="playlist-suggestion-feed" data-playlist-feed></div>
+          </section>
         </div>
       </section>
     </main>
@@ -153,6 +175,7 @@
 
     <script src="../assets/js/script.js"></script>
     <script src="../assets/js/couple-config.js"></script>
+    <script src="../assets/js/shared-features.js"></script>
     <script src="../assets/js/site-auth.js"></script>
   </body>
 </html>

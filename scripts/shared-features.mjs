@@ -88,6 +88,10 @@ async function initialize() {
     await setupQuestions(client, user, status);
     return;
   }
+  if (featureName === 'playlist') {
+    await setupPlaylist(client, user, status);
+    return;
+  }
   const feature = features[featureName];
   if (!feature) {
     showStatus(status, 'não encontrei esta página do cantinho.', 'error');
@@ -486,12 +490,156 @@ function setupFeature(client, user, status, feature) {
   client.channel(`shared-${feature.table}`).on('postgres_changes', { event: '*', schema: 'public', table: feature.table }, () => { void load(); }).subscribe();
 }
 
+async function setupPlaylist(client, user, status) {
+  const form = root.querySelector('[data-playlist-form]');
+  const feed = root.querySelector('[data-playlist-feed]');
+  const featured = root.querySelector('[data-playlist-featured]');
+  let songs = [];
+  const spotifyTrackId = (value) => {
+    if (!value) return '';
+    try {
+      const url = new URL(value);
+      if (url.hostname !== 'open.spotify.com') return null;
+      const [, type, id] = url.pathname.split('/');
+      return type === 'track' && /^[a-zA-Z0-9]+$/.test(id || '') ? id : null;
+    } catch {
+      return null;
+    }
+  };
+  const renderSong = (song, isFeatured = false) => {
+    const card = element('article', `shared-card playlist-song-card${isFeatured ? ' is-featured' : ''}`);
+    card.append(element('span', 'playlist-song-mark', '♫'));
+    card.append(element('h3', 'playlist-song-title', song.title));
+    if (song.artist) card.append(element('p', 'playlist-song-artist', song.artist));
+    if (song.dedication) card.append(element('p', 'playlist-song-dedication', `“${song.dedication}”`));
+    card.append(element('small', 'shared-meta', `${song.created_by === user.id ? 'sugerida por você' : 'sugerida pelo seu amor'} · ${new Date(song.created_at).toLocaleDateString('pt-BR', { dateStyle: 'medium' })}`));
+    const actions = element('div', 'shared-card-actions');
+    if (song.spotify_url) {
+      const listen = element('a', 'shared-action playlist-listen', 'ouvir no Spotify ↗');
+      listen.href = song.spotify_url;
+      listen.target = '_blank';
+      listen.rel = 'noopener noreferrer';
+      actions.append(listen);
+    }
+    if (!isFeatured) {
+      const featureButton = element('button', 'shared-action', 'escolher para esta semana ♡');
+      featureButton.type = 'button';
+      featureButton.addEventListener('click', async () => {
+        featureButton.disabled = true;
+        const { error: clearError } = await client.from('couple_songs').update({ is_featured: false }).eq('is_featured', true);
+        const { error } = clearError ? { error: clearError } : await client.from('couple_songs').update({ is_featured: true }).eq('id', song.id);
+        if (error) showStatus(status, `não consegui atualizar o destaque: ${error.message}`, 'error');
+        await load();
+      });
+      actions.append(featureButton);
+    }
+    if (song.created_by === user.id) {
+      const remove = element('button', 'shared-action', 'remover');
+      remove.type = 'button';
+      remove.addEventListener('click', async () => {
+        if (!window.confirm('Remover esta música das sugestões compartilhadas?')) return;
+        remove.disabled = true;
+        const { error } = await client.from('couple_songs').delete().eq('id', song.id);
+        if (error) showStatus(status, `não consegui remover: ${error.message}`, 'error');
+        await load();
+      });
+      actions.append(remove);
+    }
+    if (actions.childElementCount) card.append(actions);
+    return card;
+  };
+  const renderFeatured = () => {
+    const song = songs.find((item) => item.is_featured) || songs[0];
+    featured.replaceChildren();
+    featured.classList.toggle('has-featured-song', Boolean(song));
+    featured.append(element('p', 'eyebrow', '♫ a música da nossa semana'));
+    if (!song) {
+      featured.append(element('h3', '', 'Uma música está esperando por vocês'));
+      featured.append(element('p', '', 'Sugiram uma faixa e contem por que ela combina com a história de vocês.'));
+      return;
+    }
+    const copy = element('div', 'playlist-featured-copy');
+    copy.append(element('h3', '', song.title));
+    if (song.artist) copy.append(element('p', 'playlist-song-artist', song.artist));
+    if (song.dedication) copy.append(element('p', 'playlist-featured-note', `“${song.dedication}”`));
+    featured.append(copy);
+    const trackId = spotifyTrackId(song.spotify_url);
+    if (trackId) {
+      const embed = document.createElement('iframe');
+      embed.className = 'playlist-featured-embed';
+      embed.src = `https://open.spotify.com/embed/track/${encodeURIComponent(trackId)}?utm_source=generator`;
+      embed.title = `Ouvir ${song.title} no Spotify`;
+      embed.loading = 'lazy';
+      embed.allow = 'autoplay; clipboard-write; encrypted-media; fullscreen; picture-in-picture';
+      featured.append(embed);
+    } else if (song.spotify_url) {
+      const listen = element('a', 'playlist-featured-link', 'abrir música no Spotify ↗');
+      listen.href = song.spotify_url;
+      listen.target = '_blank';
+      listen.rel = 'noopener noreferrer';
+      featured.append(listen);
+    }
+  };
+  const load = async () => {
+    const { data, error } = await client.from('couple_songs').select('*').order('created_at', { ascending: false }).limit(100);
+    if (error) {
+      const missingTable = error.code === '42P01' || error.code === 'PGRST205' || error.message?.includes('couple_songs');
+      showStatus(status, missingTable
+        ? 'para ativar sugestões compartilhadas, aplique uma vez o arquivo supabase/playlist-migration.sql no SQL Editor do Supabase.'
+        : `não consegui carregar as músicas: ${error.message}`, 'error');
+      return;
+    }
+    songs = data || [];
+    renderFeatured();
+    feed.replaceChildren();
+    if (!songs.length) feed.append(element('p', 'playlist-suggestions-empty', 'As primeiras músicas dedicadas por vocês vão aparecer aqui.'));
+    else songs.forEach((song) => feed.append(renderSong(song, song.id === (songs.find((item) => item.is_featured)?.id || songs[0].id))));
+    showStatus(status, `${songs.length} ${songs.length === 1 ? 'música guardada' : 'músicas guardadas'} no repertório de vocês ♥`);
+  };
+  form.addEventListener('submit', async (event) => {
+    event.preventDefault();
+    const submit = form.querySelector('[type="submit"]');
+    const formData = new FormData(form);
+    const title = String(formData.get('title') || '').trim();
+    const artist = String(formData.get('artist') || '').trim();
+    const spotifyUrl = String(formData.get('spotify_url') || '').trim();
+    const dedication = String(formData.get('dedication') || '').trim();
+    if (spotifyUrl && !spotifyTrackId(spotifyUrl)) {
+      showStatus(status, 'use o link de uma música individual do Spotify (spotify.com/track/...).', 'error');
+      return;
+    }
+    submit.disabled = true;
+    showStatus(status, 'guardando a música para vocês...');
+    const { error } = await client.from('couple_songs').insert({
+      created_by: user.id,
+      title,
+      artist,
+      spotify_url: spotifyUrl,
+      dedication,
+      is_featured: !songs.some((song) => song.is_featured)
+    });
+    submit.disabled = false;
+    if (error) {
+      const missingTable = error.code === '42P01' || error.code === 'PGRST205' || error.message?.includes('couple_songs');
+      showStatus(status, missingTable
+        ? 'antes de guardar, aplique o arquivo supabase/playlist-migration.sql no SQL Editor do Supabase.'
+        : `não consegui guardar: ${error.message}`, 'error');
+      return;
+    }
+    form.reset();
+    await load();
+  });
+  await load();
+  client.channel('shared-couple-songs').on('postgres_changes', { event: '*', schema: 'public', table: 'couple_songs' }, () => { void load(); }).subscribe();
+}
+
 function localDateKey(date) {
   return `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, '0')}-${String(date.getDate()).padStart(2, '0')}`;
 }
 
 function renderRecord(record, feature, user, client, status, reload) {
-  const card = element('article', 'shared-card');
+  const card = element('article', `shared-card${feature.table === 'couple_letters' ? ' love-letter-card' : ''}`);
+  if (feature.table === 'couple_letters') card.append(element('span', 'love-letter-seal', '♥'));
   const title = record.title || record.item || 'um pedacinho do nosso dia';
   card.append(element('h2', '', title));
   if (feature.date) {

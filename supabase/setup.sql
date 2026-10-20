@@ -283,6 +283,17 @@ create table if not exists public.couple_notes (
   created_at timestamptz not null default now()
 );
 
+create table if not exists public.couple_songs (
+  id uuid primary key default gen_random_uuid(),
+  created_by uuid not null references auth.users(id) on delete cascade,
+  title text not null check (char_length(title) between 1 and 120),
+  artist text not null default '' check (char_length(artist) <= 120),
+  spotify_url text not null default '' check (char_length(spotify_url) <= 500),
+  dedication text not null default '' check (char_length(dedication) <= 800),
+  is_featured boolean not null default false,
+  created_at timestamptz not null default now()
+);
+
 create table if not exists public.couple_questions (
   id uuid primary key default gen_random_uuid(),
   created_by uuid not null references auth.users(id) on delete cascade,
@@ -314,7 +325,7 @@ declare
 begin
   foreach table_name in array array[
     'couple_timeline', 'couple_letters', 'couple_diary', 'couple_plans',
-    'couple_wishes', 'couple_notes', 'couple_questions', 'couple_events'
+    'couple_wishes', 'couple_notes', 'couple_songs', 'couple_questions', 'couple_events'
   ] loop
     execute format('alter table public.%I enable row level security', table_name);
     execute format('grant select, insert, update, delete on public.%I to authenticated', table_name);
@@ -351,7 +362,7 @@ declare
 begin
   foreach table_name in array array[
     'couple_timeline', 'couple_letters', 'couple_diary', 'couple_plans',
-    'couple_wishes', 'couple_notes', 'couple_questions', 'couple_answers', 'couple_events'
+    'couple_wishes', 'couple_notes', 'couple_songs', 'couple_questions', 'couple_answers', 'couple_events'
   ] loop
     if not exists (
       select 1 from pg_publication_tables

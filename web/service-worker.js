@@ -1,7 +1,7 @@
-const CACHE_NAME = 'nosso-amor-v35';
+const CACHE_NAME = 'nosso-amor-v36';
 const APP_FILES = [
   './', './index.html', './manifest.webmanifest',
-  './assets/css/styles.css', './assets/css/modern.css', './assets/css/social.css', './assets/css/couple.css', './assets/css/auth.css', './assets/css/chat.css', './assets/css/shared-features.css', './assets/css/design-system.css', './assets/css/letter.css',
+  './assets/css/styles.css', './assets/css/modern.css', './assets/css/social.css', './assets/css/couple.css', './assets/css/auth.css', './assets/css/chat.css', './assets/css/shared-features.css', './assets/css/design-system.css', './assets/css/letter.css', './assets/css/special-pages.css',
   './assets/js/script.js', './assets/js/couple-config.js', './assets/js/couple-interactions.js', './assets/js/shared-features.js', './assets/js/site-auth.js',
   './assets/images/app-icon.svg', './assets/images/icon_appandsite.png', './assets/images/icon_appandsite-192.png', './assets/images/icon_appandsite-512.png', './assets/images/Hello.png', './assets/images/pinke_pie.png', './assets/images/rivalidade.png',
   './assets/images/WhatsApp Image 2026-09-20 at 20.42.50.jpeg',
