@@ -1,0 +1,66 @@
+<!doctype html>
+<html lang="pt-BR">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Prévia do player de música</title>
+  <style>
+    :root{color-scheme:light;--pink:#df5b91;--hot-pink:#ca3d79;--blush:#ffe6f0;--ink:#482b3a;--muted:#9b7c8c}
+    *{box-sizing:border-box}
+    body{min-height:100vh;margin:0;display:grid;place-items:center;overflow:hidden;background:radial-gradient(ellipse at 70% 15%,#fff 0,#fff8fb 38%,#fbeaf2 100%);font-family:"DM Sans",Arial,sans-serif;color:var(--ink)}
+    .preview-note{position:fixed;top:24px;left:50%;transform:translateX(-50%);color:#9b7c8c;font-size:12px;letter-spacing:.04em}
+    .music-player{position:fixed;right:22px;bottom:22px;z-index:1;display:flex;align-items:center;gap:10px;padding:9px 12px 9px 48px;border:1px solid #e7b7ca;border-radius:999px;background:linear-gradient(135deg,#fffafc,#fff0f6);box-shadow:0 12px 30px #8b41631f;color:var(--ink);transition:transform .28s cubic-bezier(.2,.8,.2,1),box-shadow .2s}
+    .music-player-content{display:flex;align-items:center;gap:10px;transition:opacity .2s ease}
+    .music-player-toggle{position:absolute;top:50%;left:5px;display:grid;place-items:center;width:34px;height:34px;transform:translateY(-50%);border:1px solid #f0c7d8;border-radius:50%;background:#fff;color:var(--pink);font-size:19px;line-height:1;cursor:pointer;box-shadow:0 3px 10px #8b41631a;transition:transform .2s,background .2s,box-shadow .2s}
+    .music-player-toggle:hover{transform:translateY(-50%) scale(1.08);background:var(--blush);box-shadow:0 5px 14px #8b41632c}
+    .music-player-toggle:focus-visible,.play:focus-visible{outline:3px solid #f45d9b;outline-offset:3px}
+    .music-player.is-collapsed{transform:translateX(calc(100% - 42px));padding-left:9px}
+    .music-player.is-collapsed .music-player-content{opacity:0;pointer-events:none}
+    .cover{display:grid;place-items:center;width:34px;height:34px;flex:none;border-radius:50%;background:var(--blush);color:var(--pink);font-size:18px}
+    .play{display:grid;place-items:center;width:38px;height:38px;flex:none;border:0;border-radius:50%;background:var(--pink);color:#fff;cursor:pointer;box-shadow:0 5px 12px #f45d9b4d;transition:transform .2s,background .2s}
+    .play:hover{transform:scale(1.06);background:var(--hot-pink)}
+    .play-icon{font-size:17px;line-height:1}
+    .info{display:flex;flex-direction:column;min-width:118px;max-width:180px}
+    .title{overflow:hidden;text-overflow:ellipsis;white-space:nowrap;font-size:11px;font-weight:700}
+    .status{margin-top:2px;color:var(--muted);font-size:9px;letter-spacing:.5px;text-transform:uppercase}
+    .progress{display:block;width:100%;height:4px;margin-top:7px;accent-color:var(--pink)}
+    .volume{display:flex;align-items:center;gap:4px;color:var(--pink);font-size:15px}
+    .volume input{width:62px;accent-color:var(--pink)}
+    .is-playing .play-icon{animation:pulse 1s ease-in-out infinite}
+    @keyframes pulse{50%{transform:scale(1.18)}}
+    @media(max-width:560px){.music-player{right:12px;bottom:12px;padding:7px 10px 7px 44px}.music-player.is-collapsed{transform:translateX(calc(100% - 40px))}.music-player-toggle{width:32px;height:32px}.play{width:34px;height:34px}.info{min-width:100px;max-width:135px}.title{font-size:10px}.volume{display:none}}
+    @media(prefers-reduced-motion:reduce){*,*::before,*::after{animation-duration:.01ms!important;transition-duration:.01ms!important}}
+  </style>
+</head>
+<body>
+  <p class="preview-note">Prévia independente do player</p>
+  <section class="music-player" id="player" aria-label="Player de música">
+    <button class="music-player-toggle" id="toggle" type="button" aria-controls="player-content" aria-expanded="true" aria-label="Esconder player de música">›</button>
+    <div class="music-player-content" id="player-content">
+      <div class="cover" aria-hidden="true">♥</div>
+      <button class="play" id="play" type="button" aria-label="Tocar música"><span class="play-icon" id="play-icon">▶</span></button>
+      <span class="info"><span class="title">Last Night On Earth</span><span class="status" id="status">música do nosso amor</span><input class="progress" type="range" min="0" max="100" value="35" aria-label="Progresso da música" /></span>
+      <label class="volume" aria-label="Volume">⌁<input type="range" min="0" max="1" step="0.01" value="0.7" /></label>
+    </div>
+  </section>
+  <script>
+    const player=document.querySelector('#player');
+    const toggle=document.querySelector('#toggle');
+    const play=document.querySelector('#play');
+    const icon=document.querySelector('#play-icon');
+    const status=document.querySelector('#status');
+    toggle.addEventListener('click',()=>{
+      const collapsed=player.classList.toggle('is-collapsed');
+      toggle.textContent=collapsed?'‹':'›';
+      toggle.setAttribute('aria-expanded',String(!collapsed));
+      toggle.setAttribute('aria-label',`${collapsed?'Mostrar':'Esconder'} player de música`);
+    });
+    play.addEventListener('click',()=>{
+      const playing=player.classList.toggle('is-playing');
+      icon.textContent=playing?'Ⅱ':'▶';
+      play.setAttribute('aria-label',playing?'Pausar música':'Tocar música');
+      status.textContent=playing?'tocando agora':'pausada';
+    });
+  </script>
+</body>
+</html>
