@@ -104,7 +104,29 @@ body.night-mode .love-letter-card .love-letter-seal { border-color: #80536d; bac
 .playlist-suggestion-form textarea { min-height: 84px; resize: vertical; }
 .playlist-suggestion-form input:focus-visible, .playlist-suggestion-form textarea:focus-visible { outline: 0; border-color: var(--pink); box-shadow: 0 0 0 4px color-mix(in srgb,var(--pink) 16%,transparent); }
 .playlist-form-wide, .playlist-submit { grid-column: 1 / -1; }
-.playlist-submit { justify-self: start; }
+.playlist-submit {
+  justify-self: start;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 9px;
+  min-height: 46px;
+  padding: 0 20px;
+  border: 1px solid color-mix(in srgb, var(--pink) 45%, white);
+  border-radius: 999px;
+  background: linear-gradient(135deg, #f45d9b, #d94182);
+  box-shadow: 0 8px 18px rgba(217,65,130,.2), inset 0 1px 0 rgba(255,255,255,.28);
+  color: #fff;
+  font: 700 12px 'DM Sans',sans-serif;
+  letter-spacing: .01em;
+  cursor: pointer;
+  transition: transform .18s ease, box-shadow .18s ease, filter .18s ease;
+}
+.playlist-submit::before { content: '♫'; font-size: 15px; line-height: 1; }
+.playlist-submit:hover:not(:disabled) { transform: translateY(-2px); box-shadow: 0 11px 22px rgba(217,65,130,.28), inset 0 1px 0 rgba(255,255,255,.3); filter: saturate(1.08); }
+.playlist-submit:active:not(:disabled) { transform: translateY(0); }
+.playlist-submit:focus-visible { outline: 3px solid color-mix(in srgb, var(--pink) 35%, transparent); outline-offset: 3px; }
+.playlist-submit:disabled { opacity: .65; cursor: wait; }
 .playlist-status { margin-top: 13px; }
 .playlist-suggestion-feed { display: grid; grid-template-columns: repeat(2,minmax(0,1fr)); gap: 13px; margin-top: 17px; }
 .playlist-song-card { position: relative; min-width: 0; padding: 20px 17px 16px 53px; overflow: hidden; }
@@ -121,6 +143,7 @@ body.night-mode .playlist-week::before { background: rgba(255,143,186,.07); }
 body.night-mode .playlist-featured-note { color: #e2b4c6; }
 body.night-mode .playlist-featured-link { border-color: #70435d; background: #3d2940; color: #ffabc9; }
 body.night-mode .playlist-suggestion-form { border-color: #70435d; background: linear-gradient(145deg,#3d2940,#342536); }
+body.night-mode .playlist-submit { border-color: rgba(255,171,201,.45); background: linear-gradient(135deg,#eb6b9e,#c94479); box-shadow: 0 8px 18px rgba(0,0,0,.22), inset 0 1px 0 rgba(255,255,255,.2); }
 body.night-mode .playlist-suggestion-form input, body.night-mode .playlist-suggestion-form textarea { border-color: #70435d; background: #2c222f; color: var(--ink); }
 body.night-mode .playlist-song-mark { border-color: #70435d; background: #493044; color: #ffabc9; }
 body.night-mode .playlist-dedications { border-color: rgba(185,112,151,.22); }
