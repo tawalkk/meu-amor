@@ -127,6 +127,175 @@ function renderPortal() {
 function setupFeature(client, user, status, feature) {
   const form = root.querySelector('[data-shared-form]');
   const feed = root.querySelector('[data-shared-feed]');
+  const isCalendar = feature.table === 'couple_events';
+  let displayedMonth = new Date(new Date().getFullYear(), new Date().getMonth(), 1);
+  let selectedDate = localDateKey(new Date());
+  const reminderStorageKey = `meu-amor-calendar-reminders-${user.id}`;
+  const browserReminderTimers = new Map();
+  const nativeNotifications = window.MeuAmorLocalNotifications;
+  const isNativeApp = Boolean(window.Capacitor?.isNativePlatform?.() && nativeNotifications);
+  const readReminders = () => {
+    try {
+      return JSON.parse(localStorage.getItem(reminderStorageKey) || '{}');
+    } catch {
+      return {};
+    }
+  };
+  const saveReminders = (reminders) => localStorage.setItem(reminderStorageKey, JSON.stringify(reminders));
+  const notificationIdFor = (eventId) => {
+    let hash = 2166136261;
+    for (const character of `${user.id}:${eventId}`) hash = Math.imul(hash ^ character.charCodeAt(0), 16777619);
+    return (hash >>> 0) & 0x7fffffff || 1;
+  };
+  const showBrowserReminder = async (record) => {
+    const options = {
+      body: `Está chegando: ${record.title} ♥`,
+      icon: new URL('../assets/images/icon_appandsite-192.png', location.href).href,
+      tag: `couple-event-${record.id}`,
+      data: { url: new URL('calendario.html', location.href).href }
+    };
+    try {
+      const registration = 'serviceWorker' in navigator ? await navigator.serviceWorker.ready : null;
+      if (registration?.showNotification) {
+        await registration.showNotification('Lembrete de vocês ♥', options);
+      } else {
+        const notification = new Notification('Lembrete de vocês ♥', options);
+        notification.onclick = () => { window.focus(); location.href = options.data.url; };
+      }
+    } catch {
+      showStatus(status, 'não consegui mostrar a notificação neste navegador.', 'error');
+    }
+  };
+  const armBrowserReminder = (record, reminder) => {
+    if (browserReminderTimers.has(record.id)) return;
+    const fire = () => {
+      const remaining = reminder.at - Date.now();
+      if (remaining <= 0) {
+        browserReminderTimers.delete(record.id);
+        const reminders = readReminders();
+        delete reminders[record.id];
+        saveReminders(reminders);
+        void showBrowserReminder(record);
+        void load();
+        return;
+      }
+      browserReminderTimers.set(record.id, window.setTimeout(fire, Math.min(remaining, 2147000000)));
+    };
+    fire();
+  };
+  const cancelReminder = async (eventId, notificationId = notificationIdFor(eventId)) => {
+    const timer = browserReminderTimers.get(eventId);
+    if (timer) window.clearTimeout(timer);
+    browserReminderTimers.delete(eventId);
+    if (isNativeApp) await nativeNotifications.cancel({ notifications: [{ id: notificationId }] }).catch(() => {});
+  };
+  const syncReminders = async (records) => {
+    const reminders = readReminders();
+    const currentRecords = new Map(records.map((record) => [record.id, record]));
+    for (const [eventId, reminder] of Object.entries(reminders)) {
+      if (!currentRecords.has(eventId) || reminder.eventAt !== currentRecords.get(eventId).starts_at || reminder.at <= Date.now()) {
+        await cancelReminder(eventId, reminder.notificationId);
+        delete reminders[eventId];
+      }
+    }
+    saveReminders(reminders);
+    if (!isNativeApp && 'Notification' in window && Notification.permission === 'granted') {
+      for (const record of records) {
+        const reminder = reminders[record.id];
+        if (reminder && reminder.eventAt === record.starts_at) armBrowserReminder(record, reminder);
+      }
+    }
+  };
+  const requestReminderPermission = async () => {
+    if (isNativeApp) {
+      let permission = await nativeNotifications.checkPermissions();
+      if (permission.display !== 'granted') permission = await nativeNotifications.requestPermissions();
+      return permission.display === 'granted';
+    }
+    if (!('Notification' in window)) return false;
+    if (Notification.permission === 'granted') return true;
+    if (Notification.permission === 'denied') return false;
+    return (await Notification.requestPermission()) === 'granted';
+  };
+  const addReminderControl = (card, record) => {
+    const actions = card.querySelector('.shared-card-actions') || element('div', 'shared-card-actions');
+    if (!actions.isConnected) card.append(actions);
+    const control = element('div', 'calendar-reminder-control');
+    const select = document.createElement('select');
+    select.className = 'calendar-reminder-select';
+    select.setAttribute('aria-label', `Quanto antes avisar sobre ${record.title}`);
+    for (const [minutes, label] of [[0, 'na hora'], [10, '10 min antes'], [60, '1 hora antes'], [1440, '1 dia antes'], [10080, '1 semana antes']]) {
+      const option = element('option', '', label);
+      option.value = String(minutes);
+      select.append(option);
+    }
+    const reminders = readReminders();
+    const reminder = reminders[record.id];
+    if (reminder) select.value = String(reminder.minutes);
+    const isCurrentReminder = reminder?.eventAt === record.starts_at;
+    const toggle = element('button', `shared-action calendar-reminder-button${isCurrentReminder ? ' is-reminder-active' : ''}`, isCurrentReminder ? '🔔 lembrete ativo' : reminder ? 'atualizar lembrete' : '♡ me lembrar');
+    toggle.type = 'button';
+    toggle.setAttribute('aria-pressed', String(Boolean(isCurrentReminder)));
+    const eventTimestamp = new Date(record.starts_at).getTime();
+    if (eventTimestamp <= Date.now() && !isCurrentReminder) {
+      select.disabled = true;
+      toggle.disabled = true;
+      toggle.title = 'Este evento já passou';
+    }
+    control.append(select, toggle);
+    actions.prepend(control);
+    toggle.addEventListener('click', async () => {
+      toggle.disabled = true;
+      try {
+        const current = readReminders();
+        const savedReminder = current[record.id];
+        if (savedReminder?.eventAt === record.starts_at) {
+          await cancelReminder(record.id, savedReminder.notificationId);
+          delete current[record.id];
+          saveReminders(current);
+          showStatus(status, 'lembrete desativado neste dispositivo.');
+          await load();
+          return;
+        }
+        const leadMinutes = Number(select.value);
+        const remindAt = eventTimestamp - leadMinutes * 60000;
+        if (remindAt <= Date.now()) {
+          showStatus(status, 'escolha um aviso que aconteça antes do evento.', 'error');
+          return;
+        }
+        const permitted = await requestReminderPermission();
+        if (!permitted) {
+          showStatus(status, isNativeApp
+            ? 'permita notificações nas configurações do dispositivo para ativar o lembrete.'
+            : 'permita notificações do navegador para ativar o lembrete.', 'error');
+          return;
+        }
+        const notificationId = notificationIdFor(record.id);
+        if (savedReminder) await cancelReminder(record.id, savedReminder.notificationId);
+        const nextReminder = { eventAt: record.starts_at, at: remindAt, minutes: leadMinutes, notificationId };
+        if (isNativeApp) {
+          await nativeNotifications.schedule({ notifications: [{
+            id: notificationId,
+            title: 'Lembrete de vocês ♥',
+            body: `${record.title} está chegando. Abra o calendário para ver os detalhes.`,
+            extra: { url: new URL('calendario.html', location.href).href },
+            schedule: { at: new Date(remindAt) }
+          }] });
+        }
+        current[record.id] = nextReminder;
+        saveReminders(current);
+        if (!isNativeApp) armBrowserReminder(record, nextReminder);
+        showStatus(status, isNativeApp
+          ? 'lembrete agendado neste dispositivo; ele pode avisar mesmo com o app fechado ♥'
+          : 'lembrete ativado enquanto o site estiver aberto. Para avisos confiáveis com ele fechado, use o app instalado.');
+        await load();
+      } catch {
+        showStatus(status, 'não consegui agendar o lembrete. Confira as permissões de notificação do dispositivo.', 'error');
+      } finally {
+        toggle.disabled = false;
+      }
+    });
+  };
   for (const field of [...(feature.date ? [feature.date] : []), ...feature.fields]) {
     const label = element('label', field.wide ? 'wide' : '', field.label);
     let input;
@@ -157,10 +326,121 @@ function setupFeature(client, user, status, feature) {
   submit.type = 'submit';
   form.append(submit);
 
+  const renderCalendar = (records) => {
+    const eventsByDate = new Map();
+    for (const record of records) {
+      const eventDate = new Date(record.starts_at);
+      const key = localDateKey(eventDate);
+      eventsByDate.set(key, [...(eventsByDate.get(key) || []), record]);
+    }
+    const calendar = element('section', 'calendar-view');
+    const toolbar = element('div', 'calendar-toolbar');
+    const monthControls = element('div', 'calendar-month-controls');
+    const previous = element('button', 'calendar-nav', '‹');
+    previous.type = 'button';
+    previous.setAttribute('aria-label', 'Mês anterior');
+    const monthTitle = element('h2', 'calendar-month-title', displayedMonth.toLocaleDateString('pt-BR', { month: 'long', year: 'numeric' }));
+    const next = element('button', 'calendar-nav', '›');
+    next.type = 'button';
+    next.setAttribute('aria-label', 'Próximo mês');
+    monthControls.append(previous, monthTitle, next);
+    const todayButton = element('button', 'calendar-today', 'hoje');
+    todayButton.type = 'button';
+    toolbar.append(monthControls, todayButton);
+    calendar.append(toolbar);
+
+    const weekdayRow = element('div', 'calendar-weekdays');
+    for (const weekday of ['seg', 'ter', 'qua', 'qui', 'sex', 'sáb', 'dom']) {
+      weekdayRow.append(element('span', '', weekday));
+    }
+    calendar.append(weekdayRow);
+
+    const grid = element('div', 'calendar-grid');
+    grid.setAttribute('role', 'group');
+    grid.setAttribute('aria-label', `Dias de ${displayedMonth.toLocaleDateString('pt-BR', { month: 'long', year: 'numeric' })}`);
+    const firstOfMonth = new Date(displayedMonth.getFullYear(), displayedMonth.getMonth(), 1);
+    const gridStart = new Date(firstOfMonth);
+    gridStart.setDate(firstOfMonth.getDate() - ((firstOfMonth.getDay() + 6) % 7));
+    const todayKey = localDateKey(new Date());
+    for (let index = 0; index < 42; index += 1) {
+      const date = new Date(gridStart);
+      date.setDate(gridStart.getDate() + index);
+      const key = localDateKey(date);
+      const events = eventsByDate.get(key) || [];
+      const classes = ['calendar-day'];
+      if (date.getMonth() !== displayedMonth.getMonth()) classes.push('is-outside-month');
+      if (key === todayKey) classes.push('is-today');
+      if (key === selectedDate) classes.push('is-selected');
+      if (events.length) classes.push('has-events');
+      const day = element('button', classes.join(' '), String(date.getDate()));
+      day.type = 'button';
+      day.dataset.date = key;
+      day.setAttribute('aria-pressed', String(key === selectedDate));
+      day.setAttribute('aria-label', `${date.toLocaleDateString('pt-BR', { dateStyle: 'full' })}${events.length ? `, ${events.length} ${events.length === 1 ? 'evento' : 'eventos'}` : ''}`);
+      if (events.length) day.append(element('span', 'calendar-day-count', String(events.length)));
+      else day.append(element('span', 'calendar-day-dot', ''));
+      grid.append(day);
+    }
+    calendar.append(grid);
+
+    const agenda = element('section', 'calendar-agenda');
+    const heading = element('div', 'calendar-agenda-heading');
+    const selected = new Date(`${selectedDate}T12:00:00`);
+    const selectedEvents = eventsByDate.get(selectedDate) || [];
+    heading.append(
+      element('div', 'calendar-agenda-date', selected.toLocaleDateString('pt-BR', { weekday: 'long', day: 'numeric', month: 'long' })),
+      element('span', 'calendar-agenda-count', `${selectedEvents.length} ${selectedEvents.length === 1 ? 'momento' : 'momentos'}`)
+    );
+    agenda.append(heading);
+    if (selectedEvents.length) {
+      const agendaEvents = element('div', 'calendar-agenda-events');
+      for (const record of selectedEvents) {
+        const card = renderRecord(record, feature, user, client, status, load);
+        card.classList.add('calendar-event-card');
+        addReminderControl(card, record);
+        agendaEvents.append(card);
+      }
+      agenda.append(agendaEvents);
+    } else {
+      agenda.append(element('p', 'calendar-agenda-empty', 'nenhum plano neste dia — que tal guardar um momento especial? ♡'));
+    }
+    calendar.append(agenda);
+    feed.replaceChildren(calendar);
+
+    previous.addEventListener('click', () => {
+      displayedMonth = new Date(displayedMonth.getFullYear(), displayedMonth.getMonth() - 1, 1);
+      renderCalendar(records);
+    });
+    next.addEventListener('click', () => {
+      displayedMonth = new Date(displayedMonth.getFullYear(), displayedMonth.getMonth() + 1, 1);
+      renderCalendar(records);
+    });
+    todayButton.addEventListener('click', () => {
+      const today = new Date();
+      displayedMonth = new Date(today.getFullYear(), today.getMonth(), 1);
+      selectedDate = localDateKey(today);
+      renderCalendar(records);
+    });
+    grid.addEventListener('click', (event) => {
+      const day = event.target.closest('[data-date]');
+      if (!day) return;
+      selectedDate = day.dataset.date;
+      const [year, month] = selectedDate.split('-').map(Number);
+      displayedMonth = new Date(year, month - 1, 1);
+      renderCalendar(records);
+    });
+  };
+
   const load = async () => {
     const { data, error } = await client.from(feature.table).select('*').order(feature.order, { ascending: feature.ascending }).limit(200);
     if (error) {
       showStatus(status, `${tableErrorMessage(error)} (${error.message})`, 'error');
+      return;
+    }
+    if (isCalendar) {
+      await syncReminders(data);
+      showStatus(status, `sincronizado com o banco · ${data.length} ${data.length === 1 ? 'ocasião' : 'ocasiões'} de vocês ♥`);
+      renderCalendar(data);
       return;
     }
     feed.replaceChildren();
@@ -195,10 +475,19 @@ function setupFeature(client, user, status, feature) {
     }
     form.reset();
     showStatus(status, 'guardado no cantinho de vocês ♥');
+    if (isCalendar) {
+      const savedDate = new Date(record.starts_at);
+      selectedDate = localDateKey(savedDate);
+      displayedMonth = new Date(savedDate.getFullYear(), savedDate.getMonth(), 1);
+    }
     await load();
   });
   void load();
   client.channel(`shared-${feature.table}`).on('postgres_changes', { event: '*', schema: 'public', table: feature.table }, () => { void load(); }).subscribe();
+}
+
+function localDateKey(date) {
+  return `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, '0')}-${String(date.getDate()).padStart(2, '0')}`;
 }
 
 function renderRecord(record, feature, user, client, status, reload) {

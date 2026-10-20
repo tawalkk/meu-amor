@@ -27,7 +27,7 @@ function startCoupleSpace() {
             <h1>nós dois</h1>
             <span class="chat-presence" data-presence>conectando...</span>
           </div>
-          <button class="chat-notification-toggle" data-notifications type="button" aria-pressed="false" aria-label="Ativar notificações de mensagens" title="Ativar notificações de mensagens">♧</button>
+          <button class="chat-notification-toggle" data-notifications type="button" aria-pressed="false" aria-label="Ativar notificações de mensagens" title="Ativar notificações de mensagens"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M18 9a6 6 0 0 0-12 0c0 7-3 7-3 9h18c0-2-3-2-3-9M10 21h4"/></svg><span class="chat-notification-dot" aria-hidden="true"></span></button>
           <a class="chat-gallery-link" href="momentos.html" aria-label="Abrir nossos momentos">✦</a>
         </header>
         <div class="couple-status-wrap"></div>
@@ -103,26 +103,28 @@ function startCoupleSpace() {
   };
 
   const notificationButton = root.querySelector('[data-notifications]');
+  const nativeNotifications = window.MeuAmorLocalNotifications;
+  const isNativeApp = Boolean(window.Capacitor?.isNativePlatform?.() && nativeNotifications);
   const notificationPreferenceKey = () => `meu-amor-chat-notifications-${currentUser?.id || 'guest'}`;
   const updateNotificationButton = () => {
     if (!notificationButton) return;
     const enabled = currentUser && localStorage.getItem(notificationPreferenceKey()) === 'true';
-    notificationButton.textContent = enabled ? '🔔' : '♧';
     notificationButton.classList.toggle('is-enabled', Boolean(enabled));
     notificationButton.setAttribute('aria-pressed', String(Boolean(enabled)));
     notificationButton.setAttribute('aria-label', `${enabled ? 'Desativar' : 'Ativar'} notificações de mensagens`);
     notificationButton.title = `${enabled ? 'Desativar' : 'Ativar'} notificações de mensagens`;
-    notificationButton.disabled = !('Notification' in window);
+    notificationButton.dataset.tooltip = notificationButton.title;
+    notificationButton.disabled = !isNativeApp && !('Notification' in window);
   };
 
   if (notificationButton) {
     updateNotificationButton();
     notificationButton.addEventListener('click', async () => {
-      if (!('Notification' in window)) {
+      if (!isNativeApp && !('Notification' in window)) {
         showStatus('este navegador não oferece notificações de mensagens.', 'error');
         return;
       }
-      if (Notification.permission === 'denied') {
+      if (!isNativeApp && Notification.permission === 'denied') {
         showStatus('as notificações estão bloqueadas nas permissões do navegador.', 'error');
         return;
       }
@@ -133,29 +135,55 @@ function startCoupleSpace() {
         showStatus('notificações de mensagens desativadas.');
         return;
       }
-      let permission = Notification.permission;
-      if (permission !== 'granted') {
-        try {
+      let permission = isNativeApp ? 'granted' : Notification.permission;
+      try {
+        if (isNativeApp) {
+          let nativePermission = await nativeNotifications.checkPermissions();
+          if (nativePermission.display !== 'granted') nativePermission = await nativeNotifications.requestPermissions();
+          permission = nativePermission.display;
+        } else if (permission !== 'granted') {
           permission = await Notification.requestPermission();
-        } catch {
-          showStatus('não consegui pedir permissão para notificações neste navegador.', 'error');
-          return;
         }
+      } catch {
+        showStatus('não consegui pedir permissão para notificações neste dispositivo.', 'error');
+        return;
       }
       if (permission !== 'granted') {
-        showStatus('permita notificações para receber avisos de novas mensagens.', 'error');
+        showStatus('permita notificações no dispositivo para receber avisos de novas mensagens.', 'error');
         return;
       }
       localStorage.setItem(notificationPreferenceKey(), 'true');
       updateNotificationButton();
-      showStatus('notificações de mensagens ativadas neste navegador ♥');
+      showStatus(isNativeApp ? 'notificações de mensagens ativadas neste app ♥' : 'notificações de mensagens ativadas neste navegador ♥');
     });
   }
 
   const notifyIncomingMessage = async (message) => {
-    if (!currentUser || message.sender_id === currentUser.id || !('Notification' in window)) return;
-    if (Notification.permission !== 'granted' || localStorage.getItem(notificationPreferenceKey()) !== 'true') return;
+    if (!currentUser || message.sender_id === currentUser.id || (!isNativeApp && !('Notification' in window))) return;
+    if (localStorage.getItem(notificationPreferenceKey()) !== 'true') return;
     if (document.visibilityState === 'visible') return;
+    if (isNativeApp) {
+      try {
+        const permission = await nativeNotifications.checkPermissions();
+        if (permission.display !== 'granted') return;
+        let id = 2166136261;
+        for (const character of String(message.id)) id = Math.imul(id ^ character.charCodeAt(0), 16777619);
+        id = (id >>> 0) & 0x7fffffff || 1;
+        const body = message.message?.trim()
+          || (message.media_type?.startsWith('audio/') ? 'Seu amor enviou uma mensagem de voz.' : 'Seu amor enviou uma foto.');
+        await nativeNotifications.schedule({ notifications: [{
+          id,
+          title: 'Mensagem do seu amor ♥',
+          body: body.slice(0, 120),
+          schedule: { at: new Date(Date.now() + 1000) },
+          extra: { url: new URL('conversa.html', location.href).href }
+        }] });
+      } catch {
+        // Se o Android não puder exibir o aviso, a entrega da conversa continua normalmente.
+      }
+      return;
+    }
+    if (Notification.permission !== 'granted') return;
     const body = message.message?.trim()
       || (message.media_type?.startsWith('audio/') ? 'Seu amor enviou uma mensagem de voz.' : 'Seu amor enviou uma foto.');
     const options = {
