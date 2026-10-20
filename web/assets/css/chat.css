@@ -80,3 +80,18 @@ body.night-mode .chat-tool.is-recording{background:#572b3d;border-color:#e87996;
 @media(max-width:600px){.chat-layout{width:100%;min-height:calc(100dvh - 64px);padding:0}.chat-panel{min-height:calc(100dvh - 64px);border-right:0;border-left:0;border-radius:0}.chat-heading{gap:8px;padding:12px 10px}.chat-feed{max-height:calc(100dvh - 245px);padding:14px 12px}.chat-bubble{max-width:86%}.chat-composer{padding:10px 11px 6px}.chat-hint{padding-bottom:8px}.chat-notification-toggle{width:34px;height:34px}.chat-gallery-link{width:32px;height:32px}.chat-notification-toggle[data-tooltip]:hover:after{display:none}}
 @media(max-width:420px){.chat-composer-row{gap:5px}.chat-tool{width:34px;height:34px}.chat-composer textarea{min-height:40px;padding:10px 12px;font-size:13px}.chat-send{width:40px;height:40px}.chat-record-time{min-width:26px;font-size:9px}}
 @media(max-width:360px){.chat-heading{gap:6px;padding-inline:8px}.chat-avatar{width:38px;height:38px}.chat-heading h1{font-size:19px}.chat-presence{font-size:9px}.chat-back,.chat-gallery-link{width:30px;height:30px}.chat-notification-toggle{width:32px;height:32px}.chat-composer{padding-inline:8px}.chat-composer-row{gap:4px}.chat-tool{width:32px;height:32px}.chat-record-time{min-width:22px;font-size:8px}.chat-composer textarea{padding-inline:8px}.chat-send{width:36px;height:36px}}
+/* Mantém o campo de escrita no rodapé visível mesmo quando o teclado do celular abre. */
+@media(max-width:600px){
+  html.chat-document,html.chat-document body{width:100%;height:100%;min-height:100%;overflow:hidden}
+  body.chat-page{height:100dvh;min-height:100dvh;display:flex;flex-direction:column}
+  body.chat-page>.topbar{flex:0 0 64px;height:64px;min-height:64px}
+  body.chat-page .chat-layout{display:flex;flex:1 1 auto;width:100%;height:auto;min-height:0;margin:0;padding:0;overflow:hidden}
+  body.chat-page #couple-chat{display:flex;flex:1 1 auto;min-width:0;min-height:0}
+  body.chat-page #couple-chat .chat-panel{display:flex;flex:1 1 auto;width:100%;height:100%;min-height:0;border-right:0;border-left:0;border-radius:0}
+  body.chat-page #couple-chat .chat-feed{flex:1 1 0;min-height:0;max-height:none;overscroll-behavior:contain}
+  body.chat-page #couple-chat .chat-composer{position:relative;z-index:2;flex:0 0 auto;margin:0;padding:10px 11px calc(7px + env(safe-area-inset-bottom));}
+  body.chat-page #couple-chat .chat-composer-row{width:100%;min-width:0;gap:clamp(3px,1.4vw,6px)}
+  body.chat-page #couple-chat .chat-composer textarea{flex:1 1 0;width:0;min-width:0;min-height:44px;max-height:112px;padding:11px 12px;font-size:16px;line-height:1.35}
+  body.chat-page #couple-chat .chat-tool,body.chat-page #couple-chat .chat-send{flex-shrink:0}
+  body.chat-page #couple-chat .chat-hint{flex:0 0 auto;padding:2px 8px calc(8px + env(safe-area-inset-bottom));font-size:9px}
+}

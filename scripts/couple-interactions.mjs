@@ -47,7 +47,7 @@ function startCoupleSpace() {
             <button class="chat-tool" type="button" data-record aria-label="Gravar mensagem de voz" title="Gravar mensagem de voz">🎙</button>
             <span class="chat-record-time" data-record-time aria-live="polite"></span>
             <label class="visually-hidden" for="chat-message">Escreva uma mensagem</label>
-            <textarea id="chat-message" name="message" rows="1" maxlength="300" placeholder="escreva uma mensagem..."></textarea>
+            <textarea id="chat-message" name="message" rows="1" maxlength="300" placeholder="mensagem..." aria-label="Escreva uma mensagem"></textarea>
             <button class="chat-send" type="submit" aria-label="Enviar mensagem">➤</button>
           </div>
         </form>
