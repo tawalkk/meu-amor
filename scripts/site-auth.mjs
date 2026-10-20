@@ -23,6 +23,7 @@ if (!config?.url || !config?.anonKey) {
 }
 
 function setupLoginPage(client) {
+  setupLoginThemeToggle();
   const form = document.querySelector('#site-login-form');
   const submit = form.querySelector('button[type="submit"]');
 
@@ -82,6 +83,24 @@ function setupLoginPage(client) {
   });
 }
 
+function setupLoginThemeToggle() {
+  const button = document.querySelector('.login-theme-toggle');
+  if (!button) return;
+  let savedTheme = 'day';
+  try { savedTheme = localStorage.getItem('meu-amor-theme') || 'day'; } catch {}
+  const applyTheme = (isNight) => {
+    document.body.classList.toggle('night-mode', isNight);
+    button.textContent = isNight ? '☀' : '☾';
+    button.setAttribute('aria-label', isNight ? 'Ativar modo claro' : 'Ativar modo escuro');
+  };
+  applyTheme(savedTheme === 'night');
+  button.addEventListener('click', () => {
+    const isNight = !document.body.classList.contains('night-mode');
+    try { localStorage.setItem('meu-amor-theme', isNight ? 'night' : 'day'); } catch {}
+    applyTheme(isNight);
+  });
+}
+
 function protectSitePage(client) {
   client.auth.getSession().then(({ data, error }) => {
     if (error) {
@@ -106,6 +125,15 @@ function protectSitePage(client) {
 function addSignOutButton(client) {
   const topbar = document.querySelector('.topbar');
   if (!topbar || topbar.querySelector('.site-signout')) return;
+
+  const changePasswordButton = document.createElement('button');
+  changePasswordButton.className = 'site-password-change';
+  changePasswordButton.type = 'button';
+  changePasswordButton.textContent = 'alterar senha';
+  const passwordDialog = createPasswordDialog(client);
+  changePasswordButton.addEventListener('click', () => passwordDialog.showModal());
+  topbar.append(changePasswordButton);
+
   const button = document.createElement('button');
   button.className = 'site-signout';
   button.type = 'button';
@@ -119,6 +147,98 @@ function addSignOutButton(client) {
     }
   });
   topbar.append(button);
+}
+
+function createPasswordDialog(client) {
+  const dialog = document.createElement('dialog');
+  dialog.className = 'password-change-dialog';
+  dialog.setAttribute('aria-labelledby', 'password-change-title');
+
+  const heading = document.createElement('h2');
+  heading.id = 'password-change-title';
+  heading.textContent = 'trocar sua senha';
+  const intro = document.createElement('p');
+  intro.textContent = 'Confirme a senha atual e escolha uma nova senha para esta conta.';
+
+  const form = document.createElement('form');
+  form.className = 'password-change-form';
+  const fields = [
+    { name: 'current-password', label: 'senha atual', autocomplete: 'current-password', minLength: 1 },
+    { name: 'new-password', label: 'nova senha (mínimo 8 caracteres)', autocomplete: 'new-password', minLength: 8 },
+    { name: 'confirm-password', label: 'confirme a nova senha', autocomplete: 'new-password', minLength: 8 },
+  ];
+  const inputs = {};
+  for (const field of fields) {
+    const label = document.createElement('label');
+    label.htmlFor = `password-${field.name}`;
+    label.textContent = field.label;
+    const input = document.createElement('input');
+    input.id = label.htmlFor;
+    input.name = field.name;
+    input.type = 'password';
+    input.autocomplete = field.autocomplete;
+    input.required = true;
+    input.minLength = field.minLength;
+    inputs[field.name] = input;
+    form.append(label, input);
+  }
+
+  const status = document.createElement('p');
+  status.className = 'password-change-status';
+  status.setAttribute('role', 'status');
+  status.setAttribute('aria-live', 'polite');
+  const actions = document.createElement('div');
+  actions.className = 'password-change-actions';
+  const closeButton = document.createElement('button');
+  closeButton.type = 'button';
+  closeButton.className = 'password-change-cancel';
+  closeButton.textContent = 'cancelar';
+  closeButton.addEventListener('click', () => dialog.close());
+  const saveButton = document.createElement('button');
+  saveButton.type = 'submit';
+  saveButton.className = 'password-change-save';
+  saveButton.textContent = 'salvar nova senha';
+  actions.append(closeButton, saveButton);
+  form.append(status, actions);
+  dialog.append(heading, intro, form);
+  document.body.append(dialog);
+
+  form.addEventListener('submit', async (event) => {
+    event.preventDefault();
+    const currentPassword = inputs['current-password'].value;
+    const newPassword = inputs['new-password'].value;
+    if (newPassword !== inputs['confirm-password'].value) {
+      status.textContent = 'as novas senhas não são iguais.';
+      status.dataset.kind = 'error';
+      inputs['confirm-password'].focus();
+      return;
+    }
+
+    saveButton.disabled = true;
+    status.textContent = 'atualizando sua senha...';
+    delete status.dataset.kind;
+    try {
+      const { error } = await client.auth.updateUser({ password: newPassword, current_password: currentPassword });
+      if (error) {
+        const message = error.message.toLowerCase();
+        status.textContent = message.includes('password') || message.includes('credential')
+          ? 'não foi possível alterar. Confira a senha atual e os requisitos de segurança da nova senha.'
+          : 'não foi possível alterar a senha agora. Tente novamente em instantes.';
+        status.dataset.kind = 'error';
+        return;
+      }
+      form.reset();
+      status.textContent = 'senha alterada com sucesso ♥';
+      status.dataset.kind = 'success';
+    } catch {
+      status.textContent = 'não foi possível alterar a senha agora. Tente novamente em instantes.';
+      status.dataset.kind = 'error';
+    } finally {
+      saveButton.disabled = false;
+    }
+  });
+
+  return dialog;
 }
 
 function redirectToLogin() {

@@ -2,7 +2,7 @@ import { cp, mkdir, readFile, rm, writeFile } from 'node:fs/promises';
 import { build } from 'esbuild';
 
 const webSource = 'web';
-const assetVersion = 36;
+const assetVersion = 37;
 const files = ['index.html', 'manifest.webmanifest', 'service-worker.js', 'assets', 'pages'];
 if (!process.argv.includes('--android')) files.push('downloads');
 await rm('www', { recursive: true, force: true });
@@ -49,6 +49,7 @@ for (const page of ['www/index.html', ...['carta', 'chuva', 'conversa', 'histori
     .replace(/script\.js(?:\?v=\d+)?"/g, `script.js?v=${assetVersion}"`)
     .replace(/modern\.css(?:\?v=\d+)?"/g, `modern.css?v=${assetVersion}"`)
     .replace(/letter\.css(?:\?v=\d+)?"/g, `letter.css?v=${assetVersion}"`)
+    .replace(/auth\.css(?:\?v=\d+)?"/g, `auth.css?v=${assetVersion}"`)
     .replace(/special-pages\.css(?:\?v=\d+)?"/g, `special-pages.css?v=${assetVersion}"`)
     .replace(/home-moments\.js(?:\?v=\d+)?"/g, `home-moments.js?v=${assetVersion}"`)
     .replace(/(couple-interactions|shared-features)\.js(?:\?v=\d+)?"/g, `$1.js?v=${assetVersion}"`)

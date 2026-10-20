@@ -14,24 +14,37 @@
   </head>
   <body class="login-page">
     <main class="login-shell">
-      <a class="login-brand" href="../index.html"><img class="login-brand-icon" src="../assets/images/icon_appandsite.png" alt="" /> mês.dois</a>
-      <section class="login-card" aria-labelledby="login-title">
-        <span class="login-heart" aria-hidden="true">♥</span>
-        <p class="eyebrow"><span>♡</span> um cantinho só nosso</p>
-        <h1 id="login-title">que bom ter<br /><em>você aqui.</em></h1>
-        <p class="login-intro">entre para ver nossos momentos e deixar um carinho.</p>
-        <form id="site-login-form" class="site-login-form">
-          <label for="login-username">seu usuário</label>
-          <input id="login-username" name="username" autocomplete="username" autocapitalize="none" spellcheck="false" placeholder="digite seu usuário" required />
-          <label for="login-password">sua senha</label>
-          <input id="login-password" name="password" type="password" autocomplete="current-password" placeholder="digite sua senha" required />
-          <p id="login-status" class="login-status" role="status" aria-live="polite"></p>
-          <button class="login-submit" type="submit">entrar no nosso cantinho <span>♥</span></button>
-        </form>
-        <p class="login-note">um espaço privado para nós dois.</p>
-      </section>
-      <span class="login-sparkle sparkle-left" aria-hidden="true">✦</span>
-      <span class="login-sparkle sparkle-right" aria-hidden="true">✧</span>
+      <header class="login-header">
+        <a class="login-brand" href="../index.html"><img class="login-brand-icon" src="../assets/images/icon_appandsite.png" alt="" /> mês<span>.</span>dois</a>
+        <button class="login-theme-toggle" type="button" aria-label="Ativar modo escuro">☾</button>
+      </header>
+      <div class="login-layout">
+        <section class="login-welcome" aria-label="Boas-vindas">
+          <span class="login-orbit login-orbit-one" aria-hidden="true"></span>
+          <span class="login-orbit login-orbit-two" aria-hidden="true"></span>
+          <span class="login-welcome-heart" aria-hidden="true">♥</span>
+          <p class="login-welcome-kicker"><span>✦</span> um espaço só de vocês</p>
+          <h1>nossa história<br />mora <em>aqui.</em></h1>
+          <p class="login-welcome-copy">Um cantinho para guardar lembranças, compartilhar carinho e continuar escrevendo cada capítulo juntos.</p>
+          <div class="login-welcome-note"><span aria-hidden="true">♡</span><p>feito para nós dois<small>momentos pequenos, lembranças para sempre</small></p></div>
+        </section>
+        <section class="login-card" aria-labelledby="login-title">
+          <span class="login-card-mark" aria-hidden="true">♡</span>
+          <p class="eyebrow">BOM TER VOCÊ POR AQUI</p>
+          <h2 id="login-title">entre no<br /><em>nosso cantinho</em></h2>
+          <p class="login-intro">Use seu usuário e sua senha para continuar.</p>
+          <form id="site-login-form" class="site-login-form">
+            <label for="login-username">seu usuário</label>
+            <input id="login-username" name="username" autocomplete="username" autocapitalize="none" spellcheck="false" placeholder="como podemos te chamar?" required />
+            <label for="login-password">sua senha</label>
+            <input id="login-password" name="password" type="password" autocomplete="current-password" placeholder="digite sua senha" required />
+            <p id="login-status" class="login-status" role="status" aria-live="polite"></p>
+            <button class="login-submit" type="submit">entrar com carinho <span aria-hidden="true">→</span></button>
+          </form>
+          <p class="login-note"><span aria-hidden="true">⌑</span> espaço privado, só de vocês dois</p>
+        </section>
+      </div>
+      <footer class="login-footer"><span>mês.dois</span><i aria-hidden="true">♥</i><span>com carinho, sempre</span></footer>
     </main>
     <script src="../assets/js/site-auth.js"></script>
   </body>
