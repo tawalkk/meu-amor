@@ -13,9 +13,7 @@
     <link rel="stylesheet" href="../assets/css/modern.css" />
     <link rel="stylesheet" href="../assets/css/social.css" />
     <link rel="stylesheet" href="../assets/css/auth.css" />
-    <style>
-      .rain-page{position:relative;min-height:calc(100vh - 157px);display:grid;place-items:center;overflow:hidden;padding:70px 20px}.rain-back{position:absolute;top:28px;left:20px;z-index:3;margin:0}.rain-back a{color:var(--pink);font-size:11px;text-decoration:none;text-transform:uppercase;letter-spacing:1.5px}.rain-content{position:relative;z-index:2;width:min(600px,100%);padding:54px 28px;text-align:center;background:#fffaf5e8;border:1px solid var(--border);border-radius:24px;box-shadow:0 20px 60px #b9799e24}.rain-content h1{margin:0;color:var(--ink);font:700 clamp(44px,8vw,76px)/.9 'Baloo 2',sans-serif}.rain-content h1 em{color:var(--pink);font-style:normal}.rain-content p{margin:22px auto 0;max-width:400px;color:var(--muted);font-size:15px;line-height:1.7}.rain-heart{position:absolute;top:-40px;color:var(--pink);font-size:20px;pointer-events:none;animation:rainFall linear forwards}.rain-heart:nth-child(3n){color:#eaa044}.rain-heart:nth-child(4n){font-size:14px;color:#e98ab4}@keyframes rainFall{to{transform:translateY(115vh) rotate(360deg);opacity:0}}.rain-button{display:inline-flex;margin-top:28px;padding:13px 20px;border:1px solid var(--pink);border-radius:999px;background:var(--pink);color:#fff;text-decoration:none;font-size:11px;font-weight:700;letter-spacing:1px;text-transform:uppercase}@media(max-width:560px){.rain-page{padding:38px 14px}.rain-back{top:16px;left:14px}.rain-content{padding:42px 20px}.rain-content p{font-size:13px}}
-    </style>
+    <link rel="stylesheet" href="../assets/css/special-pages.css" />
   </head>
   <body>
     <div class="sparkle-field" aria-hidden="true"></div>
@@ -30,12 +28,27 @@
     </header>
 
     <main class="rain-page" id="rain-page">
-      <p class="rain-back"><a href="../index.html">← voltar para o início</a></p>
-      <section class="rain-content">
-        <p class="eyebrow"><span>♥</span> uma página só nossa</p>
-        <h1>chuva de <em>carinho</em></h1>
-        <p>Porque às vezes um coração só não consegue contar tudo o que eu sinto por você.</p>
-        <a class="rain-button" href="../index.html">voltar para o início</a>
+      <p class="rain-back"><a href="../index.html#home-links">← nossos espaços</a></p>
+      <section class="rain-content" aria-labelledby="rain-title">
+        <div class="rain-copy">
+          <p class="rain-kicker"><span aria-hidden="true">✦</span> um carinho em cada detalhe</p>
+          <h1 id="rain-title">chuva de <em>carinho</em></h1>
+          <p class="rain-message">Se meu amor pudesse virar palavras, ainda faltaria espaço. Então deixei alguns corações caírem por aqui, só para lembrar o quanto você é especial.</p>
+          <a class="rain-button" href="../index.html#home-links"><span aria-hidden="true">♡</span> voltar para o nosso cantinho <span aria-hidden="true">↗</span></a>
+          <p class="rain-signature">com todo o meu amor <span aria-hidden="true">♥</span></p>
+        </div>
+        <div class="rain-art" aria-hidden="true">
+          <span class="rain-art-orbit rain-art-orbit-one"></span>
+          <span class="rain-art-orbit rain-art-orbit-two"></span>
+          <span class="rain-art-cloud rain-art-cloud-one"></span>
+          <span class="rain-art-cloud rain-art-cloud-two"></span>
+          <span class="rain-art-heart rain-art-heart-one">♥</span>
+          <span class="rain-art-heart rain-art-heart-two">♥</span>
+          <span class="rain-art-heart rain-art-heart-three">♥</span>
+          <span class="rain-art-sparkle rain-art-sparkle-one">✦</span>
+          <span class="rain-art-sparkle rain-art-sparkle-two">✧</span>
+          <span class="rain-art-caption">feito para você <b>♡</b></span>
+        </div>
       </section>
     </main>
 
@@ -52,18 +65,21 @@
     <script src="../assets/js/site-auth.js"></script>
     <script>
       const rainPage = document.querySelector('#rain-page');
+      const reducedMotion = window.matchMedia('(prefers-reduced-motion: reduce)');
       const createRainHeart = () => {
+        if (document.hidden || reducedMotion.matches) return;
         const heart = document.createElement('span');
         heart.className = 'rain-heart';
         heart.textContent = Math.random() > 0.25 ? '♥' : '✦';
+        heart.setAttribute('aria-hidden', 'true');
         heart.style.left = `${Math.random() * 100}%`;
-        heart.style.animationDuration = `${4 + Math.random() * 5}s`;
-        heart.style.animationDelay = `${Math.random() * 2}s`;
+        heart.style.animationDuration = `${5 + Math.random() * 4}s`;
+        heart.style.animationDelay = `${Math.random() * 1.2}s`;
         rainPage.appendChild(heart);
-        setTimeout(() => heart.remove(), 10000);
+        setTimeout(() => heart.remove(), 10500);
       };
-      for (let index = 0; index < 22; index += 1) createRainHeart();
-      setInterval(createRainHeart, 420);
+      for (let index = 0; index < 10; index += 1) createRainHeart();
+      setInterval(createRainHeart, 900);
     </script>
   </body>
 </html>

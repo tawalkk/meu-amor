@@ -2,7 +2,7 @@ import { cp, mkdir, readFile, rm, writeFile } from 'node:fs/promises';
 import { build } from 'esbuild';
 
 const webSource = 'web';
-const assetVersion = 38;
+const assetVersion = 39;
 const files = ['index.html', 'manifest.webmanifest', 'service-worker.js', 'assets', 'pages'];
 if (!process.argv.includes('--android')) files.push('downloads');
 await rm('www', { recursive: true, force: true });
