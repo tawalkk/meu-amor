@@ -95,6 +95,8 @@ function startCoupleSpace() {
   let recordingStartedAt = 0;
   let recordingTimer = null;
   let supportsChatMedia = true;
+  let photosLoadGeneration = 0;
+  let photoUploadPending = false;
   const chatMediaMigrationNotice = 'as mensagens de texto funcionam; execute supabase/setup.sql no Supabase para habilitar fotos e mensagens de voz.';
 
   const showStatus = (message, type = 'info') => {
@@ -291,22 +293,29 @@ function startCoupleSpace() {
 
   const loadPhotos = async () => {
     if (!isMomentsPage) return;
+    const generation = ++photosLoadGeneration;
     const gallery = document.querySelector('.photo-grid');
     const { data, error } = await client
       .from('couple_photos')
       .select('id,object_path,caption,sender_id,created_at')
       .order('created_at', { ascending: false });
     if (error) {
+      if (generation !== photosLoadGeneration) return;
       showStatus(`não consegui carregar as fotos compartilhadas: ${error.message}`, 'error');
       return;
     }
-    gallery.querySelectorAll('[data-shared-photo]').forEach((photo) => photo.remove());
-    for (const [index, photo] of data.entries()) {
+    const uniquePhotos = [...new Map((data || []).map((photo) => [photo.object_path, photo])).values()];
+    const cards = document.createDocumentFragment();
+    const signedPhotos = await Promise.all(uniquePhotos.map(async (photo) => {
       const { data: image, error: imageError } = await client.storage
         .from('couple-moments')
         .createSignedUrl(photo.object_path, 3600);
-      if (imageError) {
-        showStatus(`não consegui abrir uma foto compartilhada: ${imageError.message}`, 'error');
+      return { photo, image, imageError };
+    }));
+    if (generation !== photosLoadGeneration) return;
+    for (const [index, { photo, image, imageError }] of signedPhotos.entries()) {
+      if (imageError || !image?.signedUrl) {
+        showStatus(`não consegui abrir uma foto compartilhada: ${imageError?.message || 'URL da foto indisponível'}`, 'error');
         continue;
       }
       const card = document.createElement('article');
@@ -335,8 +344,11 @@ function startCoupleSpace() {
         caption.append(deleteButton);
       }
       card.append(placeholder, caption);
-      gallery.append(card);
+      cards.append(card);
     }
+    if (generation !== photosLoadGeneration) return;
+    gallery.querySelectorAll('[data-shared-photo]').forEach((photo) => photo.remove());
+    gallery.append(cards);
   };
 
   const deletePhoto = async (photo, button) => {
@@ -694,7 +706,7 @@ function startCoupleSpace() {
       event.preventDefault();
       const file = photoInput.files[0];
       const caption = photoForm.elements.caption.value.trim();
-      if (!file || !currentUser) return;
+      if (!file || !currentUser || photoUploadPending) return;
       if (!['image/jpeg', 'image/png', 'image/webp'].includes(file.type)) {
         showStatus('escolha uma imagem JPG, PNG ou WebP.', 'error');
         return;
@@ -706,34 +718,39 @@ function startCoupleSpace() {
       const extension = { 'image/jpeg': 'jpg', 'image/png': 'png', 'image/webp': 'webp' }[file.type];
       const objectPath = `${currentUser.id}/${crypto.randomUUID()}.${extension}`;
       const uploadButton = photoForm.querySelector('button[type="submit"]');
+      photoUploadPending = true;
       uploadButton.disabled = true;
       showStatus('enviando a lembrança privada...');
-      const { error: uploadError } = await client.storage
-        .from('couple-moments')
-        .upload(objectPath, file, { contentType: file.type, upsert: false });
-      if (uploadError) {
+      try {
+        const { error: uploadError } = await client.storage
+          .from('couple-moments')
+          .upload(objectPath, file, { contentType: file.type, upsert: false });
+        if (uploadError) {
+          showStatus(`não consegui enviar a foto: ${uploadError.message}`, 'error');
+          return;
+        }
+        const { error: recordError } = await client.from('couple_photos').insert({
+          object_path: objectPath,
+          caption,
+          sender_id: currentUser.id,
+        });
+        if (recordError) {
+          const { error: cleanupError } = await client.storage.from('couple-moments').remove([objectPath]);
+          const cleanupNote = cleanupError ? ` O arquivo também não pôde ser limpo: ${cleanupError.message}` : '';
+          showStatus(`não consegui adicionar a foto ao álbum: ${recordError.message}.${cleanupNote}`, 'error');
+          return;
+        }
+        photoForm.reset();
+        fileName.textContent = 'Nenhum arquivo escolhido';
+        filePicker.classList.remove('has-file');
+        showStatus('foto adicionada aos momentos ✦');
+        await loadPhotos();
+      } catch (error) {
+        showStatus(`não consegui adicionar a foto ao álbum: ${error.message}`, 'error');
+      } finally {
+        photoUploadPending = false;
         uploadButton.disabled = false;
-        showStatus(`não consegui enviar a foto: ${uploadError.message}`, 'error');
-        return;
       }
-      const { error: recordError } = await client.from('couple_photos').insert({
-        object_path: objectPath,
-        caption,
-        sender_id: currentUser.id,
-      });
-      if (recordError) {
-        const { error: cleanupError } = await client.storage.from('couple-moments').remove([objectPath]);
-        const cleanupNote = cleanupError ? ` O arquivo também não pôde ser limpo: ${cleanupError.message}` : '';
-        uploadButton.disabled = false;
-        showStatus(`não consegui adicionar a foto ao álbum: ${recordError.message}.${cleanupNote}`, 'error');
-        return;
-      }
-      photoForm.reset();
-      fileName.textContent = 'Nenhum arquivo escolhido';
-      filePicker.classList.remove('has-file');
-      uploadButton.disabled = false;
-      showStatus('foto adicionada aos momentos ✦');
-      await loadPhotos();
     });
   }
 
